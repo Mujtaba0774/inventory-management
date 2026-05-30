@@ -1,0 +1,1 @@
+globalThis.__USE_MOCK_DATA__ = false; 
