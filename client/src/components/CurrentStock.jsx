@@ -262,7 +262,7 @@ export const CurrentStock = ({ onEditProduct }) => {
         </div>
 
         {filteredProducts.length > 0 && (
-          <div className="p-4 border-t border-gray-200 dark:border-slate-700">
+          <div className="border-t border-gray-200 dark:border-slate-700">
             <Pagination currentPage={currentPage} totalPages={totalPages} onChange={setCurrentPage} />
           </div>
         )}

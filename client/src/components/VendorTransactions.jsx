@@ -346,9 +346,9 @@ export const VendorTransactions = () => {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Vendors List Sidebar */}
         <div className="xl:col-span-1">
-          <div className="card h-full">
+          <div className="card h-fit rounded-md">
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 dark:border-slate-700">
+            <div className="p-5  border-b border-gray-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-50 mb-4">Vendors</h3>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -369,7 +369,7 @@ export const VendorTransactions = () => {
                   <button
                     key={vendor.id}
                     onClick={() => setSelectedVendor(vendor)}
-                    className={`w-full text-left px-6 py-4 border-b border-gray-100 hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800 transition-all ${
+                    className={`w-full text-left px-6 py-4 border-t border-gray-100 hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800 transition-all ${
                       selectedVendor?.id === vendor.id 
                         ? 'bg-blue-50 border-l-4 border-l-blue-600 dark:bg-blue-900/20 dark:border-l-blue-400' 
                         : ''
@@ -587,7 +587,7 @@ export const VendorTransactions = () => {
               </div>
             </div>
           ) : (
-            <div className="card p-12 text-center">
+            <div className="card p-12 rounded-lg   text-center">
               <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 dark:text-slate-200 text-lg font-medium ">Select a vendor to view their account</p>
               <p className="text-gray-500 dark:text-slate-300 text-sm mt-2">Choose from the vendor list to get started</p>
