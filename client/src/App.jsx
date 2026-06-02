@@ -146,7 +146,7 @@ function App() {
                       <p className="text-xs text-gray-500 dark:text-slate-400">Warehouse</p>
                     </div>
                   </div>
-                  <div className="w-6"> <ThemeSwitcher /></div>
+                  <div className="w-6 mr-3 md:mr-0"> <ThemeSwitcher /></div>
                 </div>
               </div>
 
