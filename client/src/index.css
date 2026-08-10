@@ -540,11 +540,27 @@
 /* ===== RIGHT-TO-LEFT (URDU) SUPPORT ===== */
 /* Activated by dir="rtl" on <html>, set by LanguageProvider. */
 
+/* Self-hosted so Urdu renders identically on every machine. Relying on an
+   installed system font is not safe: where none of the named families exist,
+   fontconfig falls back to DejaVu Sans, which lacks the Urdu forms of heh-goal
+   (ہ) and bari-yeh (ے) and breaks joined text apart. 92 KB, fetched only when
+   the page is actually in Urdu. */
+@font-face {
+  font-family: 'Noto Naskh Arabic';
+  src: url('/fonts/noto-naskh-arabic.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1,
+    U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF,
+    U+FE70-FE74, U+FE76-FEFC;
+}
+
 [dir='rtl'] {
-  /* Naskh reads far better than Nastaliq in dense tables and forms. Falls back
-     through fonts commonly installed on Windows and Linux before system-ui. */
+  /* Naskh reads far better than Nastaliq in dense tables and forms. Latin
+     characters fall past the (Arabic-only) webfont to the system UI stack. */
   font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma,
-    'Jameel Noori Nastaleeq', system-ui, sans-serif;
+    FreeSerif, system-ui, sans-serif;
 }
 
 /* Urdu glyphs sit taller than Latin ones, so they need a little more room. */
