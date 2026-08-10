@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { useNotification } from '../hooks/useNotification';
 import { useConfirm } from '../hooks/useConfirm';
+import { useLanguage } from '../hooks/useLanguage';
 import { mockVendors } from '../data/mockData';
 
 const useMockData = globalThis.__USE_MOCK_DATA__ === true;
@@ -13,6 +14,7 @@ const API_URL = 'http://localhost:5000/api';
 export const VendorManagement = () => {
   const { showNotification } = useNotification();
   const { confirm } = useConfirm();
+  const { t, td } = useLanguage();
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,13 +42,13 @@ export const VendorManagement = () => {
       }
 
       const response = await fetch(`${API_URL}/vendors`);
-      if (!response.ok) throw new Error('Failed to load vendors');
+      if (!response.ok) throw new Error(t('vendors.loadFailedMessage'));
       const data = await response.json();
       setVendors(data.vendors || data.vendors || []);
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Load failed',
+        title: t('vendors.loadFailed'),
         message: error.message,
       });
     } finally {
@@ -64,11 +66,11 @@ export const VendorManagement = () => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Vendor name is required';
+      newErrors.name = t('vendors.errNameRequired');
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Valid email is required';
+      newErrors.email = t('vendors.errEmailInvalid');
     }
 
     setErrors(newErrors);
@@ -150,8 +152,10 @@ export const VendorManagement = () => {
 
         showNotification({
           type: 'success',
-          title: editingVendor ? 'Vendor updated' : 'Vendor created',
-          message: `${formData.name} was ${editingVendor ? 'updated' : 'added'} successfully`,
+          title: editingVendor ? t('vendors.updatedTitle') : t('vendors.createdTitle'),
+          message: editingVendor
+            ? t('vendors.updatedMessage', { name: formData.name })
+            : t('vendors.createdMessage', { name: formData.name }),
         });
 
         handleCloseForm();
@@ -178,13 +182,15 @@ export const VendorManagement = () => {
       console.log('[RESPONSE] Data:', responseData);
 
       if (!response.ok) {
-        throw new Error(responseData.message || `HTTP ${response.status}: Failed to save vendor`);
+        throw new Error(responseData.message || `HTTP ${response.status}: ${t('vendors.saveFailedMessage')}`);
       }
 
       showNotification({
         type: 'success',
-        title: editingVendor ? 'Vendor updated' : 'Vendor created',
-        message: `${formData.name} was ${editingVendor ? 'updated' : 'added'} successfully`,
+        title: editingVendor ? t('vendors.updatedTitle') : t('vendors.createdTitle'),
+        message: editingVendor
+          ? t('vendors.updatedMessage', { name: formData.name })
+          : t('vendors.createdMessage', { name: formData.name }),
       });
 
       handleCloseForm();
@@ -196,17 +202,17 @@ export const VendorManagement = () => {
       // Parse specific error messages
       if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
         if (errorMessage.includes('email')) {
-          errorMessage = 'This email is already registered for another vendor';
+          errorMessage = t('vendors.duplicateEmail');
         } else if (errorMessage.includes('name')) {
-          errorMessage = 'A vendor with this name already exists';
+          errorMessage = t('vendors.duplicateName');
         } else {
-          errorMessage = 'This vendor information already exists';
+          errorMessage = t('vendors.duplicateGeneric');
         }
       }
 
       showNotification({
         type: 'error',
-        title: 'Save failed',
+        title: t('vendors.saveFailed'),
         message: errorMessage,
       });
     } finally {
@@ -216,10 +222,10 @@ export const VendorManagement = () => {
 
   const handleDelete = async (vendor) => {
     const isConfirmed = await confirm({
-      title: 'Delete vendor',
-      message: `Are you sure you want to delete ${vendor.name}?`,
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
+      title: t('vendors.deleteTitle'),
+      message: t('vendors.deleteMessage', { name: vendor.name }),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
     });
 
     if (!isConfirmed) return;
@@ -232,8 +238,8 @@ export const VendorManagement = () => {
 
         showNotification({
           type: 'success',
-          title: 'Vendor deleted',
-          message: `${vendor.name} has been removed`,
+          title: t('vendors.deleted'),
+          message: t('vendors.deletedMessage', { name: vendor.name }),
         });
 
         return;
@@ -243,19 +249,19 @@ export const VendorManagement = () => {
         method: 'DELETE',
       });
 
-      if (!response.ok) throw new Error('Failed to delete vendor');
+      if (!response.ok) throw new Error(t('vendors.deleteFailedMessage'));
 
       showNotification({
         type: 'success',
-        title: 'Vendor deleted',
-        message: `${vendor.name} has been removed`,
+        title: t('vendors.deleted'),
+        message: t('vendors.deletedMessage', { name: vendor.name }),
       });
 
       loadVendors();
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Delete failed',
+        title: t('vendors.deleteFailed'),
         message: error.message,
       });
     } finally {
@@ -267,18 +273,18 @@ export const VendorManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">Vendor Management</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">{t('vendors.title')}</h1>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:space-x-4">
           <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-slate-200">
             <Clock className="h-4 w-4" />
-            <span>{new Date().toLocaleString()}</span>
+            <span className="force-ltr">{new Date().toLocaleString()}</span>
           </div>
           <button
             onClick={() => handleOpenForm()}
             className="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-2 font-medium text-white shadow-md transition-colors hover:bg-blue-700 sm:w-auto"
           >
             <Plus className="h-5 w-5" />
-            <span>Add Vendor</span>
+            <span>{t('vendors.addVendor')}</span>
           </button>
         </div>
       </div>
@@ -286,13 +292,13 @@ export const VendorManagement = () => {
       {/* Search Bar */}
       <div className="card p-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute ltr:left-4 rtl:right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-field pl-12"
-            placeholder="Search by vendor name, email, or phone..."
+            className="input-field ltr:pl-12 rtl:pr-12"
+            placeholder={t('vendors.searchPlaceholder')}
           />
         </div>
       </div>
@@ -301,25 +307,25 @@ export const VendorManagement = () => {
       {filteredVendors.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredVendors.map(vendor => (
-            <div key={vendor.id} className="card overflow-hidden border-l-4 border-l-blue-600 dark:border-l-blue-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
+            <div key={vendor.id} className="card accent-bar overflow-hidden border-l-4 border-l-blue-600 dark:border-l-blue-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
               {/* Header */}
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-slate-50">{vendor.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-slate-50">{td(vendor.name)}</h3>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleOpenForm(vendor)}
                       className="rounded p-2 text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                      title="Edit vendor"
+                      title={t('vendors.editVendor')}
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(vendor)}
                       className="rounded p-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                      title="Delete vendor"
+                      title={t('vendors.deleteVendor')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -331,27 +337,27 @@ export const VendorManagement = () => {
                   {vendor.email && (
                     <div className="flex items-center space-x-3 text-sm">
                       <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                      <span className="break-all text-gray-700 dark:text-slate-300">{vendor.email}</span>
+                      <span className="break-all text-gray-700 dark:text-slate-300 force-ltr">{vendor.email}</span>
                     </div>
                   )}
                   {vendor.phone && (
                     <div className="flex items-center space-x-3 text-sm">
                       <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-gray-700 dark:text-slate-300">{vendor.phone}</span>
+                      <span className="text-gray-700 dark:text-slate-300 force-ltr">{vendor.phone}</span>
                     </div>
                   )}
                   {vendor.address && (
                     <div className="flex items-start space-x-3 text-sm">
                       <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 dark:text-slate-300">{vendor.address}</span>
+                      <span className="text-gray-700 dark:text-slate-300">{td(vendor.address)}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Dates */}
                 <div className="mt-4 space-y-1 border-t border-gray-200 pt-4 text-xs text-gray-500 dark:border-slate-700 dark:text-slate-200">
-                  <p>Added: {new Date(vendor.created_at).toLocaleDateString()}</p>
-                  <p>Updated: {new Date(vendor.updated_at).toLocaleDateString()}</p>
+                  <p>{t('vendors.added', { date: new Date(vendor.created_at).toLocaleDateString() })}</p>
+                  <p>{t('vendors.updated', { date: new Date(vendor.updated_at).toLocaleDateString() })}</p>
                 </div>
               </div>
             </div>
@@ -362,14 +368,14 @@ export const VendorManagement = () => {
           {searchTerm ? (
             <>
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-600 dark:text-slate-200">No vendors found</p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-slate-200">Try adjusting your search criteria</p>
+              <p className="text-lg font-medium text-gray-600 dark:text-slate-200">{t('vendors.noneFound')}</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-200">{t('vendors.adjustSearch')}</p>
             </>
           ) : (
             <>
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-600 dark:text-slate-200">No vendors yet</p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-slate-200">Click "Add Vendor" to create your first vendor</p>
+              <p className="text-lg font-medium text-gray-600 dark:text-slate-200">{t('vendors.noneYet')}</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-200">{t('vendors.createFirst')}</p>
             </>
           )}
         </div>
@@ -390,7 +396,7 @@ export const VendorManagement = () => {
                   )}
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">
-                  {editingVendor ? 'Edit Vendor' : 'Add New Vendor'}
+                  {editingVendor ? t('vendors.editTitle') : t('vendors.addTitle')}
                 </h2>
               </div>
               <button
@@ -406,7 +412,7 @@ export const VendorManagement = () => {
               {/* Vendor Name */}
               <div>
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">
-                  Vendor Name *
+                  {t('vendors.nameLabel')}
                 </label>
                 <input
                   type="text"
@@ -414,7 +420,7 @@ export const VendorManagement = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className={`input-field ${errors.name ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''}`}
-                  placeholder="Enter vendor name"
+                  placeholder={t('vendors.namePlaceholder')}
                 />
                 {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
               </div>
@@ -423,7 +429,7 @@ export const VendorManagement = () => {
                 {/* Email */}
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">
-                    Email
+                    {t('vendors.email')}
                   </label>
                   <input
                     type="email"
@@ -431,7 +437,7 @@ export const VendorManagement = () => {
                     value={formData.email}
                     onChange={handleChange}
                     className={`input-field ${errors.email ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''}`}
-                    placeholder="vendor@example.com"
+                    placeholder={t('vendors.emailPlaceholder')}
                   />
                   {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
                 </div>
@@ -439,7 +445,7 @@ export const VendorManagement = () => {
                 {/* Phone */}
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">
-                    Phone Number
+                    {t('vendors.phone')}
                   </label>
                   <input
                     type="tel"
@@ -447,7 +453,7 @@ export const VendorManagement = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     className="input-field"
-                    placeholder="+92 300 1234567"
+                    placeholder={t('vendors.phonePlaceholder')}
                   />
                 </div>
               </div>
@@ -455,7 +461,7 @@ export const VendorManagement = () => {
               {/* Address */}
               <div>
                 <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">
-                  Address
+                  {t('vendors.address')}
                 </label>
                 <textarea
                   name="address"
@@ -463,7 +469,7 @@ export const VendorManagement = () => {
                   onChange={handleChange}
                   rows={3}
                   className="input-field textarea-field"
-                  placeholder="Street address, city, postal code"
+                  placeholder={t('vendors.addressPlaceholder')}
                 />
               </div>
 
@@ -474,7 +480,7 @@ export const VendorManagement = () => {
                   onClick={handleCloseForm}
                   className="rounded-lg bg-gray-100 px-6 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -482,7 +488,7 @@ export const VendorManagement = () => {
                   className="flex items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
                 >
                   <Save className="h-4 w-4" />
-                  <span>{loading ? 'Saving...' : editingVendor ? 'Update Vendor' : 'Add Vendor'}</span>
+                  <span>{loading ? t('common.saving') : editingVendor ? t('vendors.updateVendor') : t('vendors.addVendor')}</span>
                 </button>
               </div>
             </form>

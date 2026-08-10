@@ -11,10 +11,12 @@ import {
 } from 'lucide-react';
 import { useProducts } from '../hooks/useProducts';
 import { useBatchSummary } from '../hooks/useBatchSummary';
+import { useLanguage } from '../hooks/useLanguage';
 import { calculatePercentageChange, formatPercentage } from '../utils/percentageCalculator';
 
 export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSalesHistory }) => {
   const { products, stockMovements, getLowStockProducts, getTotalValue } = useProducts();
+  const { t, td, tEnum, language } = useLanguage();
   const toNumber = (value) => Number(value ?? 0);
   const batchSummaryByProduct = useBatchSummary(
     useMemo(() => products.map((product) => product.id), [products])
@@ -22,7 +24,7 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString(language === 'ur' ? 'ur-PK' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const getTotalProfit = () => {
@@ -106,12 +108,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
       const labelDate = new Date(year, month - 1, 1);
       monthMap.set(key, {
         value: key,
-        label: labelDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+        label: labelDate.toLocaleDateString(language === 'ur' ? 'ur-PK' : 'en-GB', { month: 'long', year: 'numeric' }),
       });
     });
 
     return [...monthMap.values()].sort((a, b) => b.value.localeCompare(a.value));
-  }, [stockMovements]);
+  }, [stockMovements, language]);
 
   const [selectedMonth, setSelectedMonth] = useState('all');
 
@@ -208,22 +210,22 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
   const totalValue = getTotalValue();
   const outOfStockProducts = products.filter(p => p.stock === 0);
 
-  const openProductsView = (kind, label, sortBy = 'name') => {
+  const openProductsView = (kind, labelKey, sortBy = 'name') => {
     if (!onOpenProductsView) return;
-    onOpenProductsView({ kind, label, sortBy });
+    onOpenProductsView({ kind, labelKey, sortBy });
   };
 
   const getStockStatus = (product) => {
-    if (product.stock === 0) return { color: 'text-red-600', bg: 'bg-red-100', label: 'Out of Stock' };
-    if (product.stock <= product.minStock) return { color: 'text-orange-600', bg: 'bg-orange-100', label: 'Low Stock' };
-    return { color: 'text-green-600', bg: 'bg-green-100', label: 'In Stock' };
+    if (product.stock === 0) return { color: 'text-red-600', bg: 'bg-red-100', label: t('products.outOfStock') };
+    if (product.stock <= product.minStock) return { color: 'text-orange-600', bg: 'bg-orange-100', label: t('products.lowStock') };
+    return { color: 'text-green-600', bg: 'bg-green-100', label: t('products.inStock') };
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50 pb-2">Analytics & Reports</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50 pb-2">{t('analytics.title')}</h1>
         <div className="flex  items-center space-x-3">
           <div>
             <select
@@ -232,15 +234,15 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="input-field text-sm"
             >
-              <option value="all">All Time</option>
+              <option value="all">{t('analytics.allTime')}</option>
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>{month.label}</option>
               ))}
             </select>
           </div>
           <div className="text-sm text-gray-500 dark:text-slate-200 whitespace-nowrap">
-            <Calendar className="h-4 w-4 inline mr-1 dark:text-slate-200" />
-            Last updated: {new Date().toLocaleDateString()}
+            <Calendar className="h-4 w-4 inline ltr:mr-1 rtl:ml-1 dark:text-slate-200" />
+            {t('analytics.lastUpdated', { date: new Date().toLocaleDateString() })}
           </div>
         </div>
       </div>
@@ -249,12 +251,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <button
           type="button"
-          onClick={() => openProductsView('all', 'All Products')}
-          className="card p-4 border-l-4 border-blue-500 dark:border-l-blue-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('all', 'presets.allProducts')}
+          className="card accent-bar p-4 border-l-4 border-blue-500 dark:border-l-blue-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >   
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Total Products</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.totalProducts')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">{products.length}</p>
               
             </div>
@@ -266,12 +268,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('all', 'Products by Stock Value', 'value')}
-          className="card p-4 border-l-4 border-green-500 dark:border-l-green-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('all', 'presets.byStockValue', 'value')}
+          className="card accent-bar p-4 border-l-4 border-green-500 dark:border-l-green-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Total Stock Value</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.totalStockValue')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">₨ {totalValue.toLocaleString()}</p>
               
             </div>
@@ -283,12 +285,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('lowStock', 'Low Stock Products')}
-          className="card p-4 border-l-4 border-orange-500 dark:border-l-orange-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('lowStock', 'presets.lowStock')}
+          className="card accent-bar p-4 border-l-4 border-orange-500 dark:border-l-orange-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Low Stock Items</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.lowStockItems')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">{lowStockProducts.length}</p>
               
             </div>
@@ -300,12 +302,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('outOfStock', 'Out of Stock Products')}
-          className="card p-4 border-l-4 border-red-500 dark:border-l-red-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('outOfStock', 'presets.outOfStock')}
+          className="card accent-bar p-4 border-l-4 border-red-500 dark:border-l-red-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Out of Stock</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.outOfStock')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">{outOfStockProducts.length}</p>
               
             </div>
@@ -317,12 +319,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('profitable', 'Profitable Products')}
-          className="card p-4 border-l-4 border-purple-500 dark:border-l-purple-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('profitable', 'presets.profitable')}
+          className="card accent-bar p-4 border-l-4 border-purple-500 dark:border-l-purple-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Total Profit</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.totalProfit')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">₨ {totalProfit.toLocaleString()}</p>
               
             </div>
@@ -334,12 +336,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('sold', 'Products With Sales')}
-          className="card p-4 border-l-4 border-indigo-500 dark:border-l-indigo-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('sold', 'presets.withSales')}
+          className="card accent-bar p-4 border-l-4 border-indigo-500 dark:border-l-indigo-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Total Sales Qty</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.totalSalesQty')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">{totalSalesQuantity}</p>
               
             </div>
@@ -351,12 +353,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('sold', 'Products With Sales', 'value')}
-          className="card p-4 border-l-4 border-yellow-500 dark:border-l-yellow-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('sold', 'presets.withSales', 'value')}
+          className="card accent-bar p-4 border-l-4 border-yellow-500 dark:border-l-yellow-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Sales Value</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.salesValue')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">₨ {totalSalesValue.toLocaleString()}</p>
               
             </div>
@@ -368,12 +370,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('sold', 'Products Contributing to Net Profit')}
-          className="card p-4 border-l-4 border-emerald-500 dark:border-l-emerald-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('sold', 'presets.netProfit')}
+          className="card accent-bar p-4 border-l-4 border-emerald-500 dark:border-l-emerald-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Net Realized Profit</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.netRealizedProfit')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">₨ {netRealizedProfit.toLocaleString()}</p>
             </div>
             <div className="bg-emerald-500 p-3 rounded-lg">
@@ -384,12 +386,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('damaged', 'Damaged/Lost Products')}
-          className="card p-4 border-l-4 border-rose-500 dark:border-l-rose-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('damaged', 'presets.damaged')}
+          className="card accent-bar p-4 border-l-4 border-rose-500 dark:border-l-rose-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Damage/Loss Value</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.damageLossValue')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">₨ {totalLossValue.toLocaleString()}</p>
             </div>
             <div className="bg-rose-500 p-3 rounded-lg">
@@ -401,11 +403,11 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
         <button
           type="button"
           onClick={() => openProductsView('sold', 'Products With Sales', 'value')}
-          className="card p-4 border-l-4 border-cyan-500 dark:border-l-cyan-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          className="card accent-bar p-4 border-l-4 border-cyan-500 dark:border-l-cyan-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Avg Sale Value / Unit</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.avgSaleValue')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">₨ {averageSaleValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             </div>
             <div className="bg-cyan-500 p-3 rounded-lg">
@@ -416,12 +418,12 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
 
         <button
           type="button"
-          onClick={() => openProductsView('sold', 'Sell-through Products')}
-          className="card p-4 border-l-4 border-slate-500 dark:border-l-slate-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          onClick={() => openProductsView('sold', 'presets.sellThrough')}
+          className="card accent-bar p-4 border-l-4 border-slate-500 dark:border-l-slate-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Sell-through Rate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.sellThroughRate')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">{sellThroughRate.toFixed(1)}</p>
             </div>
             <div className="bg-slate-500 p-3 rounded-lg">
@@ -433,11 +435,11 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
         <button
           type="button"
           onClick={() => openProductsView('damaged', 'Damaged/Lost Products')}
-          className="card p-4 border-l-4 border-red-400 dark:border-l-red-400  text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
+          className="card accent-bar p-4 border-l-4 border-red-400 dark:border-l-red-400  text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">Damage/Loss Qty</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{t('analytics.damageLossQty')}</p>
               <p className="text-xl md:text-2xl  lg:text-3xl  font-bold text-gray-900 dark:text-slate-50">{totalDamageQuantity}</p>
               
             </div>
@@ -455,13 +457,13 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <FileText className="h-5 w-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">Sales History</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">{t('analytics.salesHistory')}</h2>
             </div>
-            <span className="text-sm text-gray-500 dark:text-slate-400">{salesMovements.length} transactions</span>
+            <span className="text-sm text-gray-500 dark:text-slate-400">{t('analytics.transactionsCount', { count: salesMovements.length })}</span>
           </div>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {salesMovements.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No sales recorded yet</p>
+              <p className="text-gray-500 text-center py-8">{t('analytics.noSales')}</p>
             ) : (
               salesMovements.map((movement) => {
                 const product = products.find(p => p.id === movement.productId);
@@ -472,22 +474,22 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
                     key={movement.id}
                     type="button"
                     onClick={() => onNavigateToSalesHistory?.()}
-                    className="w-full flex items-center justify-between px-2.5 py-3 bg-blue-50 dark:bg-gray-900 rounded-lg border border-blue-200 dark:border-blue-600  hover:bg-blue-100 dark:hover:bg-gray-800 transition-colors text-left"
+                    className="w-full flex items-center justify-between px-2.5 py-3 bg-blue-50 dark:bg-gray-900 rounded-lg border border-blue-200 dark:border-blue-600  hover:bg-blue-100 dark:hover:bg-gray-800 transition-colors text-start"
                   >
                     <div className="flex items-center space-x-3">
                       <div className="bg-blue-100 p-2 rounded-full">
                         <TrendingUp className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-slate-50">{product?.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-slate-400">{formatDate(movement.date)} - {movement.reference || 'N/A'}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-50">{td(product?.name)}</p>
+                        <p className="text-sm text-gray-600 dark:text-slate-400">{formatDate(movement.date)} - {movement.reference || t('common.na')}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-blue-600 dark:text-blue-400">- {movement.quantity} units</p>
-                      <p className="text-sm text-gray-500 dark:text-slate-300">Value: ₨ {saleValue.toLocaleString()}</p>
+                    <div className="text-end">
+                      <p className="font-bold text-blue-600 dark:text-blue-400">{t('analytics.unitsOut', { count: movement.quantity })}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-300">{t('analytics.valueLine', { amount: saleValue.toLocaleString() })}</p>
                       <p className={`text-xs font-medium ${saleProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        Profit: ₨ {saleProfit.toLocaleString()}
+                        {t('analytics.profitLine', { amount: saleProfit.toLocaleString() })}
                       </p>
                     </div>
                   </button>
@@ -502,13 +504,13 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <AlertTriangle className="h-5 w-5 text-red-600" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">Damage & Loss Report</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">{t('analytics.damageReport')}</h2>
             </div>
-            <span className="text-sm text-gray-500 dark:text-slate-400">{damageMovements.length} incidents</span>
+            <span className="text-sm text-gray-500 dark:text-slate-400">{t('analytics.incidentsCount', { count: damageMovements.length })}</span>
           </div>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {damageMovements.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No damage or loss recorded</p>
+              <p className="text-gray-500 text-center py-8">{t('analytics.noDamage')}</p>
             ) : (
               damageMovements.map((movement) => {
                 const product = products.find(p => p.id === movement.productId);
@@ -518,20 +520,20 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
                     key={movement.id}
                     type="button"
                     onClick={() => onEditProduct?.(product)}
-                    className="w-full flex items-center justify-between px-2.5 py-5 bg-red-50 dark:bg-gray-900 rounded-lg border border-red-200 dark:border-red-600 hover:bg-red-100 dark:hover:bg-gray-800 transition-colors text-left"
+                    className="w-full flex items-center justify-between px-2.5 py-5 bg-red-50 dark:bg-gray-900 rounded-lg border border-red-200 dark:border-red-600 hover:bg-red-100 dark:hover:bg-gray-800 transition-colors text-start"
                   >
                     <div className="flex items-center space-x-3">
                       <div className="bg-red-100 p-2 rounded-full">
                         <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-slate-50">{product?.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-slate-200">{movement.reason} - {formatDate(movement.date)}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-50">{td(product?.name)}</p>
+                        <p className="text-sm text-gray-600 dark:text-slate-200">{tEnum('reasons', movement.reason)} - {formatDate(movement.date)}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-red-600 dark:text-red-400">- {movement.quantity} units</p>
-                      <p className="text-sm text-gray-500 dark:text-slate-300">Loss: ₨ {lossValue.toLocaleString()}</p>
+                    <div className="text-end">
+                      <p className="font-bold text-red-600 dark:text-red-400">{t('analytics.unitsOut', { count: movement.quantity })}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-300">{t('analytics.lossLine', { amount: lossValue.toLocaleString() })}</p>
                     </div>
                   </button>
                 );
@@ -546,33 +548,33 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
             <PieChart className="h-5 w-5 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">Profit Breakdown</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">{t('analytics.profitBreakdown')}</h2>
           </div>
-          <span className="text-sm text-gray-500">Unrealized profit in current stock</span>
+          <span className="text-sm text-gray-500">{t('analytics.unrealizedProfit')}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="bg-green-200 dark:bg-green-600 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-slate-50">Total Potential Profit</p>
+              <p className="text-sm text-gray-600 dark:text-slate-50">{t('analytics.totalPotentialProfit')}</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-200">₨ {totalProfit.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 dark:text-slate-50">Based on current stock levels</p>
+              <p className="text-xs text-gray-500 dark:text-slate-50">{t('analytics.basedOnStock')}</p>
             </div>
             <div className="bg-blue-200 dark:bg-blue-800 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-slate-50">Average Margin</p>
+              <p className="text-sm text-gray-600 dark:text-slate-50">{t('analytics.averageMargin')}</p>
               <p className="text-2xl font-bold text-blue-900 dark:text-blue-300">{averageMargin}%</p>
-              <p className="text-xs text-gray-500 dark:text-slate-50">Across all products</p>
+              <p className="text-xs text-gray-500 dark:text-slate-50">{t('analytics.acrossAllProducts')}</p>
             </div>
           </div>
           <div className="space-y-4">
             <div className="bg-yellow-200 dark:bg-yellow-700 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-slate-50">High Margin Products</p>
+              <p className="text-sm text-gray-600 dark:text-slate-50">{t('analytics.highMarginProducts')}</p>
               <p className="text-2xl font-bold text-amber-600 dark:text-amber-300">{products.filter(p => ((p.price - p.cost) / p.price * 100) > 30).length}</p>
-              <p className="text-xs text-gray-500 dark:text-slate-50">Products with 30% margin</p>
+              <p className="text-xs text-gray-500 dark:text-slate-50">{t('analytics.highMarginNote')}</p>
             </div>
             <div className="bg-red-200 dark:bg-red-600 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-slate-50">Low Margin Products</p>
+              <p className="text-sm text-gray-600 dark:text-slate-50">{t('analytics.lowMarginProducts')}</p>
               <p className="text-2xl font-bold text-red-600 dark:text-red-300">{products.filter(p => ((p.price - p.cost) / p.price * 100) < 15).length}</p>
-              <p className="text-xs text-gray-500 dark:text-slate-50">Products with 15% margin</p>
+              <p className="text-xs text-gray-500 dark:text-slate-50">{t('analytics.lowMarginNote')}</p>
             </div>
           </div>
         </div>
@@ -581,10 +583,10 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
  
       {/* Low Stock Alert */}
       {lowStockProducts.length > 0 && (
-        <div className="card p-4 border-l-4 border-orange-500 dark:border-l-orange-500">
+        <div className="card accent-bar p-4 border-l-4 border-orange-500 dark:border-l-orange-500">
           <div className="flex items-center space-x-3 mb-4">
             <AlertTriangle className="h-6 w-6 text-orange-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">Low Stock Alert</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">{t('analytics.lowStockAlert')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {lowStockProducts.map((product) => (
@@ -592,20 +594,20 @@ export const Analytics = ({ onOpenProductsView, onEditProduct, onNavigateToSales
                 key={product.id}
                 type="button"
                 onClick={() => onEditProduct?.(product)}
-                className="p-4 bg-orange-50 dark:bg-gray-900 rounded-lg border border-orange-200 dark:border-gray-600 hover:bg-orange-100 dark:hover:bg-gray-600 transition-colors text-left"
+                className="p-4 bg-orange-50 dark:bg-gray-900 rounded-lg border border-orange-200 dark:border-gray-600 hover:bg-orange-100 dark:hover:bg-gray-600 transition-colors text-start"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900 dark:text-slate-50">{product.name}</h3>
-                  <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-full">
+                  <h3 className="font-medium text-gray-900 dark:text-slate-50">{td(product.name)}</h3>
+                  <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-full force-ltr">
                     {product.sku}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-gray-600 dark:text-slate-300">
-                  <span>Current: {product.stock}</span>
-                  <span>Min: {product.minStock}</span>
+                  <span>{t('analytics.current', { count: product.stock })}</span>
+                  <span>{t('analytics.min', { count: product.minStock })}</span>
                 </div>
                 <div className="mt-2 text-sm text-orange-700 dark:text-orange-300">
-                  Reorder: {Math.max(product.minStock * 2 - product.stock, 0)} units recommended
+                  {t('analytics.reorder', { count: Math.max(product.minStock * 2 - product.stock, 0) })}
                 </div>
               </button>
             ))}

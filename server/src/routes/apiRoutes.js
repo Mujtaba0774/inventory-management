@@ -5,6 +5,7 @@ import vendorRoutes from './vendorsRoutes.js';
 import productRoutes from './productsRoutes.js';
 import stockMovementRoutes from './stockMovementsRoutes.js';
 import inventoryBatchRoutes from './inventoryBatchesRoutes.js';
+import translateRoutes from './translateRoutes.js';
 
 const router = Router();
 
@@ -39,5 +40,6 @@ router.use('/vendors', vendorRoutes);
 router.use('/products', productRoutes);
 router.use('/stock-movements', stockMovementRoutes);
 router.use('/inventory-batches', inventoryBatchRoutes);
+router.use('/translate', translateRoutes);
 
 export default router;

@@ -9,10 +9,12 @@ import {
 } from 'lucide-react';
 import { useProducts } from '../hooks/useProducts';
 import { useBatchSummary } from '../hooks/useBatchSummary';
+import { useLanguage } from '../hooks/useLanguage';
 import Pagination from './Pagination';
 
 export const CurrentStock = ({ onEditProduct }) => {
   const { products } = useProducts();
+  const { t, td } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -27,9 +29,9 @@ export const CurrentStock = ({ onEditProduct }) => {
   );
 
   const getStockStatus = (stock, minStock) => {
-    if (stock === 0) return { color: 'text-red-600 dark:text-red-300', bg: 'bg-red-100 dark:bg-red-900', label: 'Out of Stock', icon: '🔴' };
-    if (stock <= minStock) return { color: 'text-orange-600 dark:text-amber-200', bg: 'bg-amber-100 dark:bg-amber-700', label: 'Low Stock', icon: '🟠' };
-    return { color: 'text-green-600 dark:text-green-300', bg: 'bg-green-100 dark:bg-green-900', label: 'In Stock', icon: '🟢' };
+    if (stock === 0) return { color: 'text-red-600 dark:text-red-300', bg: 'bg-red-100 dark:bg-red-900', label: t('currentStock.outOfStock'), icon: '🔴' };
+    if (stock <= minStock) return { color: 'text-orange-600 dark:text-amber-200', bg: 'bg-amber-100 dark:bg-amber-700', label: t('currentStock.lowStock'), icon: '🟠' };
+    return { color: 'text-green-600 dark:text-green-300', bg: 'bg-green-100 dark:bg-green-900', label: t('currentStock.inStock'), icon: '🟢' };
   };
 
   const filteredProducts = useMemo(() => {
@@ -105,46 +107,46 @@ export const CurrentStock = ({ onEditProduct }) => {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">Current Stock</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">{t('currentStock.title')}</h1>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card p-4 border-l-4 border-blue-500 dark:border-l-blue-500  hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
+        <div className="card accent-bar p-4 border-l-4 border-blue-500 dark:border-l-blue-500  hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
           <div className="flex items-center space-x-2">
             <Package className="h-5 w-5 text-blue-600" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-slate-300">Total Products</p>
+              <p className="text-sm text-gray-600 dark:text-slate-300">{t('currentStock.totalProducts')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-slate-50">{totalProducts}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-4 border-l-4 border-green-500 dark:border-l-green-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
+        <div className="card accent-bar p-4 border-l-4 border-green-500 dark:border-l-green-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
           <div className="flex items-center space-x-2">
             <TrendingUp className="h-5 w-5 text-green-600" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-slate-300">Total Stock Value</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-slate-50">₨ {totalStockValue.toLocaleString()}</p>
+              <p className="text-sm text-gray-600 dark:text-slate-300">{t('currentStock.totalStockValue')}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-slate-50 force-ltr">₨ {totalStockValue.toLocaleString()}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-4 border-l-4 border-yellow-500 dark:border-l-yellow-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
+        <div className="card accent-bar p-4 border-l-4 border-yellow-500 dark:border-l-yellow-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="h-5 w-5 text-orange-600" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-slate-300">Low Stock</p>
+              <p className="text-sm text-gray-600 dark:text-slate-300">{t('currentStock.lowStock')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-slate-50">{lowStockCount}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-4 border-l-4 border-red-500 dark:border-l-red-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
+        <div className="card accent-bar p-4 border-l-4 border-red-500 dark:border-l-red-500 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
           <div className="flex items-center space-x-2">
             <TrendingDown className="h-5 w-5 text-red-600" />
             <div>
-              <p className="text-sm text-gray-600 dark:text-slate-300">Out of Stock</p>
+              <p className="text-sm text-gray-600 dark:text-slate-300">{t('currentStock.outOfStock')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-slate-50">{outOfStockCount}</p>
             </div>
           </div>
@@ -155,13 +157,13 @@ export const CurrentStock = ({ onEditProduct }) => {
       <div className="card p-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
+            <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t('currentStock.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-10"
+              className="input-field ltr:pl-10 rtl:pr-10"
             />
           </div>
 
@@ -170,9 +172,9 @@ export const CurrentStock = ({ onEditProduct }) => {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="input-field"
           >
-            <option value="">All Categories</option>
+            <option value="">{t('common.allCategories')}</option>
             {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category} value={category}>{td(category)}</option>
             ))}
           </select>
 
@@ -181,10 +183,10 @@ export const CurrentStock = ({ onEditProduct }) => {
             onChange={(e) => setFilterType(e.target.value)}
             className="input-field"
           >
-            <option value="all">All Items</option>
-            <option value="inStock">In Stock</option>
-            <option value="lowStock">Low Stock</option>
-            <option value="outOfStock">Out of Stock</option>
+            <option value="all">{t('currentStock.allItems')}</option>
+            <option value="inStock">{t('currentStock.inStock')}</option>
+            <option value="lowStock">{t('currentStock.lowStock')}</option>
+            <option value="outOfStock">{t('currentStock.outOfStock')}</option>
           </select>
 
           <select
@@ -192,15 +194,15 @@ export const CurrentStock = ({ onEditProduct }) => {
             onChange={(e) => setSortBy(e.target.value)}
             className="input-field"
           >
-            <option value="name">Sort by Name</option>
-            <option value="stock">Sort by Stock (Low to High)</option>
-            <option value="stockDesc">Sort by Stock (High to Low)</option>
-            <option value="category">Sort by Category</option>
+            <option value="name">{t('currentStock.sortByName')}</option>
+            <option value="stock">{t('currentStock.sortByStockAsc')}</option>
+            <option value="stockDesc">{t('currentStock.sortByStockDesc')}</option>
+            <option value="category">{t('currentStock.sortByCategory')}</option>
           </select>
 
           <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-slate-400">
             <Filter className="h-4 w-4" />
-            <span>{filteredProducts.length} of {totalProducts} products</span>
+            <span>{t('currentStock.countOfProducts', { shown: filteredProducts.length, total: totalProducts })}</span>
           </div>
         </div>
       </div>
@@ -211,15 +213,15 @@ export const CurrentStock = ({ onEditProduct }) => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Product</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">SKU</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Category</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Current Stock</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Min Level</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Status</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Unit Price</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Total Value</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">Action</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colProduct')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colSku')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colCategory')}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colCurrentStock')}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colMinLevel')}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colStatus')}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colUnitPrice')}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colTotalValue')}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-700 dark:text-slate-400 whitespace-nowrap">{t('currentStock.colAction')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
@@ -231,9 +233,9 @@ export const CurrentStock = ({ onEditProduct }) => {
 
                 return (
                   <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-                    <td className="px-6 py-4 text-gray-900 dark:text-slate-50 font-medium whitespace-nowrap">{product.name}</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400 whitespace-nowrap">{product.sku}</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400 whitespace-nowrap">{product.category}</td>
+                    <td className="px-6 py-4 text-gray-900 dark:text-slate-50 font-medium whitespace-nowrap">{td(product.name)}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400 whitespace-nowrap numeric-cell">{product.sku}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400 whitespace-nowrap">{td(product.category)}</td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <span className="text-lg font-bold text-gray-900 dark:text-slate-50">{effectiveStock}</span>
                     </td>
@@ -244,14 +246,14 @@ export const CurrentStock = ({ onEditProduct }) => {
                         <span>{stockStatus.label}</span>
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-900 dark:text-slate-50 whitespace-nowrap">₨ {toNumber(product.price).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-slate-50 whitespace-nowrap">₨ {totalValue.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-center text-gray-900 dark:text-slate-50 whitespace-nowrap numeric-cell">₨ {toNumber(product.price).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-slate-50 whitespace-nowrap numeric-cell">₨ {totalValue.toLocaleString()}</td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <button
                         onClick={() => onEditProduct?.(product)}
                         className="px-3 py-1 text-sm bg-primary-600 dark:bg-primary-700 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-700 transition-colors"
                       >
-                        Update
+                        {t('currentStock.update')}
                       </button>
                     </td>
                   </tr>
@@ -270,8 +272,8 @@ export const CurrentStock = ({ onEditProduct }) => {
         {filteredProducts.length === 0 && (
           <div className="p-12 text-center">
             <Package className="h-12 w-12 text-gray-400 dark:text-slate-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">No products found</h3>
-            <p className="text-gray-500 dark:text-slate-400">Try adjusting your search or filter criteria</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">{t('currentStock.noneFound')}</h3>
+            <p className="text-gray-500 dark:text-slate-400">{t('currentStock.adjustSearch')}</p>
           </div>
         )}
       </div>

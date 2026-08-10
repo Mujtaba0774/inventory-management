@@ -1,15 +1,18 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ConfirmContext } from './confirmContextValue';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useLanguage } from '../hooks/useLanguage';
 
 export const ConfirmProvider = ({ children }) => {
+  const { t } = useLanguage();
   const resolverRef = useRef(null);
+  // Left undefined so ConfirmDialog falls back to the active language's copy.
   const [dialogState, setDialogState] = useState({
     open: false,
-    title: 'Please confirm',
-    message: 'Are you sure you want to continue?',
-    confirmLabel: 'Confirm',
-    cancelLabel: 'Cancel',
+    title: undefined,
+    message: undefined,
+    confirmLabel: undefined,
+    cancelLabel: undefined,
   });
 
   const closeDialog = useCallback((result) => {
@@ -28,10 +31,10 @@ export const ConfirmProvider = ({ children }) => {
     }
 
     const {
-      title = 'Please confirm',
-      message = 'Are you sure you want to continue?',
-      confirmLabel = 'Confirm',
-      cancelLabel = 'Cancel',
+      title = t('confirm.defaultTitle'),
+      message = t('confirm.defaultMessage'),
+      confirmLabel = t('common.confirm'),
+      cancelLabel = t('common.cancel'),
     } = options;
 
     setDialogState({
@@ -45,7 +48,7 @@ export const ConfirmProvider = ({ children }) => {
     return new Promise((resolve) => {
       resolverRef.current = resolve;
     });
-  }, []);
+  }, [t]);
 
   const value = useMemo(() => ({ confirm }), [confirm]);
 

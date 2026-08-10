@@ -9,10 +9,12 @@ import {
 } from 'lucide-react';
 import { useProducts } from '../hooks/useProducts';
 import { useBatchSummary } from '../hooks/useBatchSummary';
+import { useLanguage } from '../hooks/useLanguage';
 import { calculatePercentageChange, formatPercentage } from '../utils/percentageCalculator';
 
 export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
   const { products, stockMovements, getLowStockProducts, getTotalValue, getTopSellingProducts } = useProducts();
+  const { t, td } = useLanguage();
   
   // Helper function to get sales for a date range
   const getSalesForDateRange = (startDate, endDate) => {
@@ -79,37 +81,37 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
 
   const stats = [
     {
-      title: 'Total Products',
+      title: t('dashboard.totalProducts'),
       value: products.length,
       icon: Package,
       gradient: 'from-primary-500 to-primary-600',
     },
     {
-      title: 'Total Inventory Value',
+      title: t('dashboard.totalInventoryValue'),
       value: `₨ ${totalValue.toLocaleString()}`,
       icon: ShoppingCart,
       gradient: 'from-green-500 to-green-600',
     },
     {
-      title: 'Sales This Week',
+      title: t('dashboard.salesThisWeek'),
       value: `₨ ${currentSalesValue.toLocaleString()}`,
       icon: TrendingUp,
       gradient: 'from-secondary-500 to-secondary-600',
     },
     {
-      title: 'Total Sold',
+      title: t('dashboard.totalSold'),
       value: totalSalesQuantity,
       icon: ShoppingCart,
       gradient: 'from-accent-500 to-accent-600',
     },
     {
-      title: 'Low Stock Alerts',
+      title: t('dashboard.lowStockAlerts'),
       value: dashboardLowStockProducts.length,
       icon: AlertTriangle,
       gradient: 'from-red-500 to-red-600',
     },
     {
-      title: 'Recent Sales',
+      title: t('dashboard.recentSales'),
       value: recentSales.length,
       icon: TrendingUp,
       gradient: 'from-blue-500 to-blue-600',
@@ -125,11 +127,11 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">Dashboard</h1>
-          <p className="text-gray-500 dark:text-slate-200 mt-1">Welcome back! Here's your warehouse overview.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">{t('dashboard.title')}</h1>
+          <p className="text-gray-500 dark:text-slate-200 mt-1">{t('dashboard.subtitle')}</p>
         </div>
-        <div className="text-right hidden lg:block">
-          <p className="text-sm text-gray-500 dark:text-slate-200">Last updated</p>
+        <div className="text-end hidden lg:block">
+          <p className="text-sm text-gray-500 dark:text-slate-200">{t('dashboard.lastUpdated')}</p>
           <p className="text-lg font-semibold text-primary-600 dark:text-primary-400">{new Date().toLocaleTimeString()}</p>
         </div>
       </div>
@@ -141,7 +143,7 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
           const Arrow = isPositive ? ArrowUpRight : ArrowDownRight;
           
           return (
-            <div key={index} className="card p-4 border-l-4 border-blue-500 dark:border-l-blue-500 text-left hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
+            <div key={index} className="card accent-bar p-4 border-l-4 border-blue-500 dark:border-l-blue-500 text-start hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-slate-200 mb-1">{stat.title}</p>
@@ -163,8 +165,8 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
         <div className="card-lg p-6  animate-slide-up dark:bg-slate-900 dark:border-slate-700">
           <div className="flex items-center cursor-pointer justify-between mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">Low Stock Alerts</h2>
-              <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">Items requiring attention</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">{t('dashboard.lowStockAlerts')}</h2>
+              <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">{t('dashboard.itemsRequiringAttention')}</p>
             </div>
             <AlertTriangle className="h-10 w-10 text-white p-1.5 rounded-md bg-red-600" />
           </div>
@@ -173,7 +175,7 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
             {dashboardLowStockProducts.length === 0 ? (
               <div className="empty-state dark:text-slate-200 ">
                 <Package className="empty-state-icon dark:text-slate-500" />
-                <p className="text-gray-500 dark:text-slate-200 ">No low stock items - Great job!</p>
+                <p className="text-gray-500 dark:text-slate-200 ">{t('dashboard.noLowStock')}</p>
               </div>
             ) : (
               dashboardLowStockProducts.map((product) => (
@@ -181,20 +183,20 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
                   key={product.id}
                   type="button"
                   onClick={() => onEditProduct?.(product)}
-                  className="w-full p-4 bg-gradient-to-r from-red-200 to-red-100 dark:from-red-800 dark:to-red-700 rounded-xl border border-red-200 dark:border-red-800 hover:from-red-100 hover:to-red-150 dark:hover:from-red-900 dark:hover:to-red-800 transition-all duration-200 text-left group"
+                  className="w-full p-4 bg-gradient-to-r from-red-200 to-red-100 dark:from-red-800 dark:to-red-700 rounded-xl border border-red-200 dark:border-red-800 hover:from-red-100 hover:to-red-150 dark:hover:from-red-900 dark:hover:to-red-800 transition-all duration-200 text-start group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900 dark:text-slate-50 group-hover:text-red-700">
-                        {product.name}
+                        {td(product.name)}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-slate-300">SKU: {product.sku}</p>
+                      <p className="text-sm text-gray-600 dark:text-slate-300">{t('common.sku')}: <span className="force-ltr">{product.sku}</span></p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                    <div className="text-end">
+                      <p className="text-sm font-bold text-red-600 dark:text-red-400 force-ltr">
                         {getEffectiveStock(product)} / {product.minStock}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-slate-200">Current / Min</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-200">{t('dashboard.currentMin')}</p>
                     </div>
                   </div>
                 </button>
@@ -207,8 +209,8 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
         <div className="card-lg p-6 animate-slide-up dark:bg-slate-900 dark:border-slate-700">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">Recent Sales</h2>
-              <p className="text-sm text-gray-500 dark:text-slate-200  mt-1">Latest transactions</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">{t('dashboard.recentSales')}</h2>
+              <p className="text-sm text-gray-500 dark:text-slate-200  mt-1">{t('dashboard.latestTransactions')}</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-950 flex items-center justify-center">
               <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -219,7 +221,7 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
             {recentSales.length === 0 ? (
               <div className="empty-state dark:text-slate-200 ">
                 <ShoppingCart className="empty-state-icon dark:text-slate-500" />
-                <p className="text-gray-500 dark:text-slate-200 ">No recent sales</p>
+                <p className="text-gray-500 dark:text-slate-200 ">{t('dashboard.noRecentSales')}</p>
               </div>
             ) : (
               recentSales.map((movement) => {
@@ -230,7 +232,7 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
                     key={movement.id}
                     type="button"
                     onClick={() => onNavigateToSalesHistory?.()}
-                    className="w-full p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-xl border border-green-200 dark:border-green-800 hover:from-green-300 hover:to-green-200 dark:hover:from-green-900 dark:hover:to-green-800 transition-all duration-200 text-left group"
+                    className="w-full p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-xl border border-green-200 dark:border-green-800 hover:from-green-300 hover:to-green-200 dark:hover:from-green-900 dark:hover:to-green-800 transition-all duration-200 text-start group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -238,13 +240,13 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
                           <ShoppingCart className="h-5 w-5 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900 dark:text-slate-50">{product?.name}</p>
-                          <p className="text-xs text-gray-600 dark:text-slate-300">{movement.date}</p>
+                          <p className="font-semibold text-gray-900 dark:text-slate-50">{td(product?.name)}</p>
+                          <p className="text-xs text-gray-600 dark:text-slate-300 force-ltr">{movement.date}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600 dark:text-green-400">{movement.quantity} units</p>
-                        <p className="text-sm text-gray-500 dark:text-slate-300">₨ {saleValue.toLocaleString()}</p>
+                      <div className="text-end">
+                        <p className="font-bold text-green-600 dark:text-green-400">{movement.quantity} {t('common.units')}</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-300 force-ltr">₨ {saleValue.toLocaleString()}</p>
                       </div>
                     </div>
                   </button>
@@ -259,8 +261,8 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
       <div className="card-lg p-6 animate-slide-up dark:bg-slate-900 dark:border-slate-700">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">Top Selling Products</h2>
-            <p className="text-sm text-gray-500 dark:text-slate-200  mt-1">Your best sellers this period</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">{t('dashboard.topSelling')}</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-200  mt-1">{t('dashboard.bestSellers')}</p>
           </div>
           <div className="h-10 w-10 rounded-lg bg-secondary-100 dark:bg-secondary-100 flex items-center justify-center">
             <ShoppingCart className="h-6 w-6 text-secondary-600 dark:text-secondary-700" />
@@ -270,7 +272,7 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
         {topSellingProducts.length === 0 ? (
           <div className="empty-state dark:text-slate-200 ">
             <Package className="empty-state-icon dark:text-slate-500" />
-            <p className="text-gray-500 dark:text-slate-200 ">No top selling products available</p>
+            <p className="text-gray-500 dark:text-slate-200 ">{t('dashboard.noTopSelling')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -285,7 +287,7 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
                   onClick={() => onEditProduct?.(product)}
                   className="card p-4 group overflow-hidden bg-gray-100 dark:bg-slate-700 dark:border-slate-600 hover:shadow-lg dark:hover:shadow-glow-purple transition-all"
                 >
-                  <div className="absolute top-2 right-4 text-4xl font-bold text-gray-500 dark:text-slate-200  group-hover:text-gray-200 dark:group-hover:text-slate-500 transition-colors">
+                  <div className="absolute top-2 ltr:right-4 rtl:left-4 text-4xl font-bold text-gray-500 dark:text-slate-200  group-hover:text-gray-200 dark:group-hover:text-slate-500 transition-colors">
                     #{index + 1}
                   </div>
                   
@@ -296,25 +298,25 @@ export const Dashboard = ({ onEditProduct, onNavigateToSalesHistory }) => {
                           ? 'bg-red-600 dark:bg-red-600 text-red-100 dark:text-red-50'
                           : 'bg-green-400 dark:bg-green-600 text-green-900 dark:text-green-50'
                       }`}>
-                        {effectiveStock} in stock
+                        {t('dashboard.inStockCount', { count: effectiveStock })}
                       </div>
                       {isLowStock && (
-                        <AlertTriangle className="absolute h-7 w-7 text-white p-1 rounded-sm bg-red-600 right-14" />
+                        <AlertTriangle className="absolute h-7 w-7 text-white p-1 rounded-sm bg-red-600 ltr:right-14 rtl:left-14" />
                       )}
                     </div>
-                    
-                    <h3 className="font-semibold text-gray-900 dark:text-slate-50 mb-2 line-clamp-2">{product.name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-slate-300 mb-4">{product.category}</p>
+
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-50 mb-2 line-clamp-2">{td(product.name)}</h3>
+                    <p className="text-sm text-gray-500 dark:text-slate-300 mb-4">{td(product.category)}</p>
                     
                     <div className="border-t border-gray-300 dark:border-slate-200  pt-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-lg font-bold text-primary-700 dark:text-primary-500">₨ {product.price}</span>
-                        <span className="text-xs text-gray-400 dark:text-slate-300">SKU: {product.sku}</span>
+                        <span className="text-lg font-bold text-primary-700 dark:text-primary-500 force-ltr">₨ {product.price}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-300">{t('common.sku')}: <span className="force-ltr">{product.sku}</span></span>
                       </div>
-                      
+
                       <div className="text-xs text-gray-500 dark:text-slate-200  space-y-1">
-                        <p>{batchSummaryByProduct[product.id]?.count ?? 0} Batches</p>
-                        <p>{batchSummaryByProduct[product.id]?.totalQuantity ?? 0} Total Qty</p>
+                        <p>{batchSummaryByProduct[product.id]?.count ?? 0} {t('dashboard.batches')}</p>
+                        <p>{batchSummaryByProduct[product.id]?.totalQuantity ?? 0} {t('dashboard.totalQty')}</p>
                       </div>
                     </div>
                   </div>

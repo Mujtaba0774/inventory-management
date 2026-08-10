@@ -3,6 +3,7 @@ import { X, Save, Package, Edit2, Trash2 } from 'lucide-react';
 import { useProducts } from '../hooks/useProducts';
 import { useNotification } from '../hooks/useNotification';
 import { useConfirm } from '../hooks/useConfirm';
+import { useLanguage } from '../hooks/useLanguage';
 
 const DEFAULT_PRODUCT_CATEGORIES = [
   'Chocolates',
@@ -24,6 +25,7 @@ export const ProductForm = ({ product, onClose }) => {
   const { products, addProduct, updateProduct, getBatchesForProduct, updateBatch, deleteBatch } = useProducts();
   const { showNotification } = useNotification();
   const { confirm } = useConfirm();
+  const { t, td } = useLanguage();
   const [productBatches, setProductBatches] = useState([]);
   const [editingBatch, setEditingBatch] = useState(null);
   const [editBatchData, setEditBatchData] = useState({ quantity: 0, unit_price: 0 });
@@ -168,14 +170,14 @@ export const ProductForm = ({ product, onClose }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = 'Product name is required';
-    if (!formData.category.trim()) newErrors.category = 'Category is required';
-    if (!formData.sku.trim()) newErrors.sku = 'SKU is required';
-    if (formData.stock < 0) newErrors.stock = 'Stock cannot be negative';
-    if (formData.minStock < 0) newErrors.minStock = 'Minimum stock cannot be negative';
-    if (formData.price <= 0) newErrors.price = 'Price must be greater than 0';
-    if (formData.cost < 0) newErrors.cost = 'Cost cannot be negative';
-    if (formData.cost >= formData.price) newErrors.cost = 'Cost should be less than price';
+    if (!formData.name.trim()) newErrors.name = t('productForm.errNameRequired');
+    if (!formData.category.trim()) newErrors.category = t('productForm.errCategoryRequired');
+    if (!formData.sku.trim()) newErrors.sku = t('productForm.errSkuRequired');
+    if (formData.stock < 0) newErrors.stock = t('productForm.errStockNegative');
+    if (formData.minStock < 0) newErrors.minStock = t('productForm.errMinStockNegative');
+    if (formData.price <= 0) newErrors.price = t('productForm.errPricePositive');
+    if (formData.cost < 0) newErrors.cost = t('productForm.errCostNegative');
+    if (formData.cost >= formData.price) newErrors.cost = t('productForm.errCostBelowPrice');
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -191,21 +193,21 @@ export const ProductForm = ({ product, onClose }) => {
         await updateProduct(product.id, formData);
         showNotification({
           type: 'success',
-          title: 'Product updated',
-          message: `${formData.name} was updated successfully.`,
+          title: t('productForm.updated'),
+          message: t('productForm.updatedMessage', { name: formData.name }),
         });
       } else {
         await addProduct(formData);
         showNotification({
           type: 'success',
-          title: 'Product added',
-          message: `${formData.name} was added to inventory.`,
+          title: t('productForm.added'),
+          message: t('productForm.addedMessage', { name: formData.name }),
         });
       }
 
       onClose();
     } catch (error) {
-      const message = error.message || 'Failed to save product';
+      const message = error.message || t('productForm.saveFailedMessage');
 
       setErrors((prev) => ({
         ...prev,
@@ -214,7 +216,7 @@ export const ProductForm = ({ product, onClose }) => {
 
       showNotification({
         type: 'error',
-        title: 'Save failed',
+        title: t('productForm.saveFailed'),
         message,
       });
     }
@@ -338,16 +340,16 @@ export const ProductForm = ({ product, onClose }) => {
       if (editBatchData.quantity <= 0) {
         showNotification({
           type: 'warning',
-          title: 'Invalid quantity',
-          message: 'Quantity must be greater than 0',
+          title: t('productForm.invalidQuantity'),
+          message: t('productForm.invalidQuantityMessage'),
         });
         return;
       }
       if (editBatchData.unit_price < 0) {
         showNotification({
           type: 'warning',
-          title: 'Invalid price',
-          message: 'Price cannot be negative',
+          title: t('productForm.invalidPrice'),
+          message: t('productForm.invalidPriceMessage'),
         });
         return;
       }
@@ -366,24 +368,24 @@ export const ProductForm = ({ product, onClose }) => {
       
       showNotification({
         type: 'success',
-        title: 'Batch updated',
-        message: 'Batch was updated successfully.',
+        title: t('productForm.batchUpdated'),
+        message: t('productForm.batchUpdatedMessage'),
       });
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Update failed',
-        message: error.message || 'Failed to update batch',
+        title: t('productForm.batchUpdateFailed'),
+        message: error.message || t('productForm.batchUpdateFailedMessage'),
       });
     }
   };
 
   const handleDeleteBatch = async (batch) => {
     const confirmed = await confirm({
-      title: 'Delete batch',
-      message: `Delete this batch (${batch.quantity} units)? This cannot be undone.`,
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
+      title: t('productForm.batchDeleteTitle'),
+      message: t('productForm.batchDeleteMessage', { count: batch.quantity }),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
     });
 
     if (!confirmed) return;
@@ -394,14 +396,14 @@ export const ProductForm = ({ product, onClose }) => {
       
       showNotification({
         type: 'success',
-        title: 'Batch deleted',
-        message: 'Batch was deleted successfully.',
+        title: t('productForm.batchDeleted'),
+        message: t('productForm.batchDeletedMessage'),
       });
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Delete failed',
-        message: error.message || 'Failed to delete batch',
+        title: t('productForm.batchDeleteFailed'),
+        message: error.message || t('productForm.batchDeleteFailedMessage'),
       });
     }
   };
@@ -440,7 +442,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
           <div className="flex items-center space-x-3">
             <Package className="h-6 w-6 text-primary-600 dark:text-primary-400" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">
-              {product ? 'Edit Product' : 'Add New Product'}
+              {product ? t('productForm.editTitle') : t('productForm.addTitle')}
             </h2>
           </div>
           <button
@@ -456,7 +458,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Product Name */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Product Name *
+                {t('productForm.productName')}
               </label>
               <input
                 type="text"
@@ -466,7 +468,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                 className={`w-full px-3 py-2 border rounded-lg dark:bg-slate-700 dark:text-slate-50 dark:border-slate-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
                   errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300'
                 }`}
-                placeholder="Enter product name"
+                placeholder={t('productForm.productNamePlaceholder')}
               />
               {errors.name && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
             </div>
@@ -474,7 +476,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Category *
+                {t('productForm.category')}
               </label>
               <select
                 name="category"
@@ -484,11 +486,11 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                   errors.category ? 'border-red-300 dark:border-red-600' : 'border-gray-300'
                 }`}
               >
-                <option value="">Select category</option>
+                <option value="">{t('productForm.selectCategory')}</option>
                 {categoryOptions.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>{td(cat)}</option>
                 ))}
-                <option value={ADD_NEW_CATEGORY_VALUE}>+ Add new category</option>
+                <option value={ADD_NEW_CATEGORY_VALUE}>{t('productForm.addNewCategory')}</option>
               </select>
               {isAddingNewCategory && (
                 <input
@@ -497,7 +499,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                   onChange={handleNewCategoryChange}
                   onBlur={handleNewCategoryBlur}
                   className="mt-2 w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                  placeholder="Type a new category name"
+                  placeholder={t('productForm.newCategoryPlaceholder')}
                 />
               )}
               {errors.category && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.category}</p>}
@@ -506,7 +508,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* SKU */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                SKU *
+                {t('productForm.sku')}
               </label>
               <input
                 type="text"
@@ -516,7 +518,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                 className={`w-full px-3 py-2 border rounded-lg dark:bg-slate-700 dark:text-slate-50 dark:border-slate-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
                   errors.sku ? 'border-red-300 dark:border-red-600' : 'border-gray-300'
                 }`}
-                placeholder="e.g., ABC-123"
+                placeholder={t('productForm.skuPlaceholder')}
               />
               {errors.sku && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.sku}</p>}
             </div>
@@ -524,7 +526,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Stock Quantity */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Current Stock *
+                {t('productForm.currentStock')}
               </label>
               <input
                 type="number"
@@ -543,7 +545,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Minimum Stock */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Minimum Stock *
+                {t('productForm.minimumStock')}
               </label>
               <input
                 type="number"
@@ -562,7 +564,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Selling Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Selling Price (Rs) *
+                {t('productForm.sellingPrice')}
               </label>
               <input
                 type="number"
@@ -581,7 +583,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Cost Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Cost Price (Rs) *
+                {t('productForm.costPrice')}
               </label>
               <input
                 type="number"
@@ -597,7 +599,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
               {errors.cost && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.cost}</p>}
               {toNumber(formData.price) > 0 && toNumber(formData.cost) > 0 && (
                 <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
-                  Profit Margin: {((((toNumber(formData.price) - toNumber(formData.cost)) / toNumber(formData.price)) * 100)).toFixed(1)}%
+                  {t('productForm.profitMargin', { value: ((((toNumber(formData.price) - toNumber(formData.cost)) / toNumber(formData.price)) * 100)).toFixed(1) })}
                 </p>
               )}
             </div>
@@ -605,7 +607,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Vendor */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Vendor
+                {t('productForm.vendor')}
               </label>
               <select
                 name="vendor"
@@ -613,11 +615,11 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                 onChange={handleVendorSelectChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
               >
-                <option value="">Select vendor (optional)</option>
+                <option value="">{t('productForm.selectVendor')}</option>
                 {vendorOptions.map((vendor) => (
-                  <option key={vendor} value={vendor}>{vendor}</option>
+                  <option key={vendor} value={vendor}>{td(vendor)}</option>
                 ))}
-                <option value={ADD_NEW_VENDOR_VALUE}>+ Add new vendor</option>
+                <option value={ADD_NEW_VENDOR_VALUE}>{t('productForm.addNewVendor')}</option>
               </select>
               {isAddingNewVendor && (
                 <input
@@ -626,7 +628,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                   onChange={handleNewVendorChange}
                   onBlur={handleNewVendorBlur}
                   className="mt-2 w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                  placeholder="Type a new vendor name"
+                  placeholder={t('productForm.newVendorPlaceholder')}
                 />
               )}
             </div>
@@ -634,7 +636,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
             {/* Description */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-                Description
+                {t('productForm.description')}
               </label>
               <textarea
                 name="description"
@@ -642,28 +644,28 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                 onChange={handleChange}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                placeholder="Enter product description"
+                placeholder={t('productForm.descriptionPlaceholder')}
               />
             </div>
 
             {/* Batches (visible when editing a product) */}
             {product && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Batches</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('productForm.batches')}</label>
                 {productBatches.length === 0 ? (
-                  <p className="text-xs text-gray-500 dark:text-slate-400">No batches for this product</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{t('productForm.noBatches')}</p>
                 ) : (
                   <div className="space-y-2">
                     {productBatches.map((batch, idx) => (
                       <div key={batch.id ?? idx} className="flex items-center justify-between text-sm bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded px-3 py-2">
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900 dark:text-slate-50">Batch {batch.batch_number ?? idx + 1}{batch.vendor_name || batch.vendor_name ? ` — ${batch.vendor_name || batch.vendor_name}` : ''}</div>
-                          <div className="text-xs text-gray-500 dark:text-slate-400">Date: {batch.batch_date ? new Date(batch.batch_date).toLocaleDateString() : (batch.created_at ? new Date(batch.created_at).toLocaleDateString() : '-')}</div>
+                          <div className="font-medium text-gray-900 dark:text-slate-50">{t('productForm.batchLabel', { number: batch.batch_number ?? idx + 1 })}{batch.vendor_name ? ` — ${td(batch.vendor_name)}` : ''}</div>
+                          <div className="text-xs text-gray-500 dark:text-slate-400">{t('productForm.batchDate', { date: batch.batch_date ? new Date(batch.batch_date).toLocaleDateString() : (batch.created_at ? new Date(batch.created_at).toLocaleDateString() : '-') })}</div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className="text-right">
-                            <div className="font-medium text-gray-900 dark:text-slate-50">{Number(batch.quantity ?? 0)} units</div>
-                            <div className="text-xs text-gray-500 dark:text-slate-400">₨ {batch.unit_price == null ? '0.00' : Number(batch.unit_price).toFixed(2)}</div>
+                          <div className="text-end">
+                            <div className="font-medium text-gray-900 dark:text-slate-50">{t('productForm.unitsCount', { count: Number(batch.quantity ?? 0) })}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400 force-ltr">₨ {batch.unit_price == null ? '0.00' : Number(batch.unit_price).toFixed(2)}</div>
                           </div>
                           <button
                             type="button"
@@ -692,7 +694,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl dark:shadow-2xl w-full max-w-md">
                   <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-50">Edit Batch</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-50">{t('productForm.editBatch')}</h3>
                     <button
                       type="button"
                       onClick={() => setEditingBatch(null)}
@@ -703,7 +705,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                   </div>
                   <div className="p-4 space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Quantity</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('common.quantity')}</label>
                       <input
                         type="number"
                         value={editBatchData.quantity}
@@ -713,7 +715,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Unit Price</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('productForm.unitPrice')}</label>
                       <input
                         type="number"
                         value={editBatchData.unit_price}
@@ -729,7 +731,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                         onClick={() => setEditingBatch(null)}
                         className="px-3 py-2 text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                       <button
                         type="button"
@@ -737,7 +739,7 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
                         className="px-3 py-2 bg-primary-600 dark:bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center space-x-2"
                       >
                         <Save className="h-4 w-4" />
-                        <span>Save</span>
+                        <span>{t('common.save')}</span>
                       </button>
                     </div>
                   </div>
@@ -748,20 +750,20 @@ const vendorOptions = formData.vendor && !vendors.includes(formData.vendor)
 
           {/* Form Actions */}
           <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-slate-700">
-            {errors.submit && <p className="text-red-600 dark:text-red-400 text-sm mr-auto">{errors.submit}</p>}
+            {errors.submit && <p className="text-red-600 dark:text-red-400 text-sm ltr:mr-auto rtl:ml-auto">{errors.submit}</p>}
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="bg-primary-600 dark:bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-700 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-colors"
             >
               <Save className="h-4 w-4" />
-              <span>{product ? 'Update' : 'Add'} Product</span>
+              <span>{product ? t('productForm.submitUpdate') : t('productForm.submitAdd')}</span>
             </button>
           </div>
         </form>

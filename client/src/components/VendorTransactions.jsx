@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useNotification } from '../hooks/useNotification';
 import { useConfirm } from '../hooks/useConfirm';
+import { useLanguage } from '../hooks/useLanguage';
 import { mockVendors, mockVendorTransactions } from '../data/mockData';
 import Pagination from './Pagination';
 
@@ -53,6 +54,7 @@ const calculateBalance = (items) => items.reduce((accumulator, item) => {
 export const VendorTransactions = () => {
   const { showNotification } = useNotification();
   const { confirm } = useConfirm();
+  const { t, td, language } = useLanguage();
   const [vendors, setVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -128,13 +130,13 @@ export const VendorTransactions = () => {
       }
 
       const response = await fetch(`${API_URL}/vendors`);
-      if (!response.ok) throw new Error('Failed to load vendors');
+      if (!response.ok) throw new Error(t('vendorAccounts.loadVendorsFailedMessage'));
       const data = await response.json();
       setVendors(data.vendors || data.vendors || []);
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Load failed',
+        title: t('vendorAccounts.loadFailed'),
         message: error.message,
       });
     } finally {
@@ -161,7 +163,7 @@ export const VendorTransactions = () => {
         fetch(`${API_URL}/vendors/${selectedVendor.id}/financial-summary`),
       ]);
 
-      if (!transRes.ok || !balanceRes.ok) throw new Error('Failed to load data');
+      if (!transRes.ok || !balanceRes.ok) throw new Error(t('vendorAccounts.loadDataFailedMessage'));
 
       const transData = await transRes.json();
       const balData = await balanceRes.json();
@@ -171,7 +173,7 @@ export const VendorTransactions = () => {
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Load failed',
+        title: t('vendorAccounts.loadFailed'),
         message: error.message,
       });
     } finally {
@@ -184,8 +186,8 @@ export const VendorTransactions = () => {
       if (!formData.amount || formData.amount <= 0) {
         showNotification({
           type: 'error',
-          title: 'Invalid amount',
-          message: 'Please enter a valid amount',
+          title: t('vendorAccounts.invalidAmount'),
+          message: t('vendorAccounts.invalidAmountMessage'),
         });
         return;
       }
@@ -214,8 +216,10 @@ export const VendorTransactions = () => {
 
         showNotification({
           type: 'success',
-          title: 'Transaction added',
-          message: `${formData.transaction_type === 'IN' ? 'Cash in' : 'Cash out'} of RS ${formData.amount} recorded`,
+          title: t('vendorAccounts.transactionAdded'),
+          message: formData.transaction_type === 'IN'
+            ? t('vendorAccounts.cashInRecorded', { amount: formData.amount })
+            : t('vendorAccounts.cashOutRecorded', { amount: formData.amount }),
         });
 
         setShowTransactionDialog(false);
@@ -236,12 +240,14 @@ export const VendorTransactions = () => {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error('Failed to add transaction');
+      if (!response.ok) throw new Error(t('vendorAccounts.addTransactionFailedMessage'));
 
       showNotification({
         type: 'success',
-        title: 'Transaction added',
-        message: `${formData.transaction_type === 'IN' ? 'Cash in' : 'Cash out'} of RS ${formData.amount} recorded`,
+        title: t('vendorAccounts.transactionAdded'),
+        message: formData.transaction_type === 'IN'
+          ? t('vendorAccounts.cashInRecorded', { amount: formData.amount })
+          : t('vendorAccounts.cashOutRecorded', { amount: formData.amount }),
       });
 
       setShowTransactionDialog(false);
@@ -257,7 +263,7 @@ export const VendorTransactions = () => {
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Failed to add transaction',
+        title: t('vendorAccounts.addFailed'),
         message: error.message,
       });
     } finally {
@@ -267,10 +273,10 @@ export const VendorTransactions = () => {
 
   const handleDeleteTransaction = async (transactionId) => {
     const isConfirmed = await confirm({
-      title: 'Delete transaction',
-      message: 'Are you sure you want to delete this transaction?',
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
+      title: t('vendorAccounts.deleteTransactionTitle'),
+      message: t('vendorAccounts.deleteConfirmMessage'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
     });
 
     if (!isConfirmed) return;
@@ -286,8 +292,8 @@ export const VendorTransactions = () => {
 
         showNotification({
           type: 'success',
-          title: 'Transaction deleted',
-          message: 'Transaction has been removed',
+          title: t('vendorAccounts.transactionDeleted'),
+          message: t('vendorAccounts.transactionDeletedMessage'),
         });
 
         return;
@@ -297,19 +303,19 @@ export const VendorTransactions = () => {
         method: 'DELETE',
       });
 
-      if (!response.ok) throw new Error('Failed to delete transaction');
+      if (!response.ok) throw new Error(t('vendorAccounts.deleteFailedMessage'));
 
       showNotification({
         type: 'success',
-        title: 'Transaction deleted',
-        message: 'Transaction has been removed',
+        title: t('vendorAccounts.transactionDeleted'),
+        message: t('vendorAccounts.transactionDeletedMessage'),
       });
 
       loadVendorData();
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Delete failed',
+        title: t('vendorAccounts.deleteFailed'),
         message: error.message,
       });
     } finally {
@@ -334,11 +340,11 @@ export const VendorTransactions = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">Vendor Accounts</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">{t('vendorAccounts.title')}</h1>
         <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-slate-200">
           <div className="flex items-center space-x-2">
             <Clock className="h-4 w-4" />
-            <span className="truncate">Last updated: {new Date().toLocaleString()}</span>
+            <span className="truncate">{t('vendorAccounts.lastUpdated', { time: new Date().toLocaleString() })}</span>
           </div>
         </div>
       </div>
@@ -349,15 +355,15 @@ export const VendorTransactions = () => {
           <div className="card h-fit rounded-md">
             {/* Header */}
             <div className="p-5  border-b border-gray-200 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-50 mb-4">Vendors</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-50 mb-4">{t('vendorAccounts.vendorsHeading')}</h3>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field text-sm pl-10"
-                  placeholder="Search vendors..."
+                  className="input-field text-sm ltr:pl-10 rtl:pr-10"
+                  placeholder={t('vendorAccounts.searchPlaceholder')}
                 />
               </div>
             </div>
@@ -369,22 +375,22 @@ export const VendorTransactions = () => {
                   <button
                     key={vendor.id}
                     onClick={() => setSelectedVendor(vendor)}
-                    className={`w-full text-left px-6 py-4 border-t border-gray-100 hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800 transition-all ${
-                      selectedVendor?.id === vendor.id 
-                        ? 'bg-blue-50 border-l-4 border-l-blue-600 dark:bg-blue-900/20 dark:border-l-blue-400' 
+                    className={`w-full text-start px-6 py-4 border-t border-gray-100 hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800 transition-all ${
+                      selectedVendor?.id === vendor.id
+                        ? 'bg-blue-50 accent-bar border-l-4 border-l-blue-600 dark:bg-blue-900/20 dark:border-l-blue-400'
                         : ''
                     }`}
                   >
-                    <div className="font-semibold text-gray-900 dark:text-slate-50 truncate">{vendor.name}</div>
+                    <div className="font-semibold text-gray-900 dark:text-slate-50 truncate">{td(vendor.name)}</div>
                     <div className="text-xs text-gray-500 dark:text-slate-200 flex items-center space-x-1 mt-1">
                       <Mail className="h-3 w-3" />
-                      <span className="truncate">{vendor.email || 'No email'}</span>
+                      <span className="truncate force-ltr">{vendor.email || t('vendorAccounts.noEmail')}</span>
                     </div>
                   </button>
                 ))
               ) : (
                 <div className="p-6 text-center text-gray-500 text-sm">
-                  No vendors found
+                  {t('vendorAccounts.noVendorsFound')}
                 </div>
               )}
             </div>
@@ -396,27 +402,27 @@ export const VendorTransactions = () => {
           {selectedVendor ? (
             <div className="space-y-6">
               {/* Vendor Card */}
-              <div className="card p-6 border-l-4 border-l-blue-600 hover:shadow-lg dark:hover:shadow-glow-purple transition-all bg-white dark:bg-slate-900">
+              <div className="card accent-bar p-6 border-l-4 border-l-blue-600 hover:shadow-lg dark:hover:shadow-glow-purple transition-all bg-white dark:bg-slate-900">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-50">{selectedVendor.name}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-50">{td(selectedVendor.name)}</h2>
                     <div className="space-y-2 mt-3 text-gray-600 dark:text-slate-200">
                       {selectedVendor.email && (
                         <div className="flex items-center space-x-2 text-sm">
                           <Mail className="h-4 w-4" />
-                          <span className="dark:text-slate-200">{selectedVendor.email}</span>
+                          <span className="dark:text-slate-200 force-ltr">{selectedVendor.email}</span>
                         </div>
                       )}
                       {selectedVendor.phone && (
                         <div className="flex items-center space-x-2 text-sm">
                           <Phone className="h-4 w-4" />
-                          <span className="dark:text-slate-200">{selectedVendor.phone}</span>
+                          <span className="dark:text-slate-200 force-ltr">{selectedVendor.phone}</span>
                         </div>
                       )}
                       {selectedVendor.address && (
                         <div className="flex items-center space-x-2 text-sm">
                           <MapPin className="h-4 w-4" />
-                          <span className="dark:text-slate-200">{selectedVendor.address}</span>
+                          <span className="dark:text-slate-200">{td(selectedVendor.address)}</span>
                         </div>
                       )}
                     </div>
@@ -429,11 +435,11 @@ export const VendorTransactions = () => {
                 <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow-purple transition-all">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700 dark:text-slate-200">Total Purchased</p>
-                      <p className="text-3xl font-bold text-green-600 mt-2">
+                      <p className="text-sm font-medium text-gray-700 dark:text-slate-200">{t('vendorAccounts.totalPurchased')}</p>
+                      <p className="text-3xl font-bold text-green-600 mt-2 force-ltr">
                         Rs {Number(balance.total_purchased || 0).toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-700 font-medium dark:text-slate-200 mt-2">Cash In</p>
+                      <p className="text-xs text-gray-700 font-medium dark:text-slate-200 mt-2">{t('vendorAccounts.cashIn')}</p>
                     </div>
                     <div className="bg-green-100 dark:bg-green-600 p-3 rounded-lg">
                       <TrendingUp className="h-6 w-6 text-green-600  dark:text-green-200" />
@@ -444,11 +450,11 @@ export const VendorTransactions = () => {
                 <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow-purple transition-all ">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700 dark:text-slate-200">Total Paid</p>
-                      <p className="text-3xl font-bold text-red-600 mt-2">
+                      <p className="text-sm font-medium text-gray-700 dark:text-slate-200">{t('vendorAccounts.totalPaid')}</p>
+                      <p className="text-3xl font-bold text-red-600 mt-2 force-ltr">
                         Rs {Number(balance.total_paid || 0).toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-700 font-medium dark:text-slate-200 mt-2">Cash Out</p>
+                      <p className="text-xs text-gray-700 font-medium dark:text-slate-200 mt-2">{t('vendorAccounts.cashOut')}</p>
                     </div>
                     <div className="bg-red-100 dark:bg-red-600 p-3 rounded-lg">
                       <TrendingDown className="h-6 w-6 text-red-600  dark:text-red-200" />
@@ -464,12 +470,12 @@ export const VendorTransactions = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className={`text-sm font-medium ${Number(balance.remaining_amount) >= 0 ? 'text-blue-100' : 'text-amber-700 dark:text-amber-50'}`}>
-                        {Number(balance.remaining_amount) >= 0 ? 'We Owe' : 'They Owe'}
+                        {Number(balance.remaining_amount) >= 0 ? t('vendorAccounts.weOwe') : t('vendorAccounts.theyOwe')}
                       </p>
-                      <p className={`text-3xl font-bold mt-2 ${Number(balance.remaining_amount) >= 0 ? 'text-blue-100' : 'text-amber-700 dark:text-amber-50'}`}>
+                      <p className={`text-3xl font-bold mt-2 force-ltr ${Number(balance.remaining_amount) >= 0 ? 'text-blue-100' : 'text-amber-700 dark:text-amber-50'}`}>
                         Rs {Math.abs(Number(balance.remaining_amount || 0)).toFixed(2)}
                       </p>
-                      <p className={`text-sm font-bold mt-2 ${Number(balance.remaining_amount) >= 0 ? 'text-blue-50' : 'text-amber-700 dark:text-amber-50'}`}>Outstanding Balance</p>
+                      <p className={`text-sm font-bold mt-2 ${Number(balance.remaining_amount) >= 0 ? 'text-blue-50' : 'text-amber-700 dark:text-amber-50'}`}>{t('vendorAccounts.outstandingBalance')}</p>
                     </div>
                     <div className={`p-3 rounded-lg ${Number(balance.remaining_amount) >= 0 ? 'bg-blue-50 dark:bg-blue-50' : 'bg-amber-700 dark:bg-amber-50'}`}>
                       <div className={`h-5  ${Number(balance.remaining_amount) >= 0 ? 'text-blue-600' : 'text-amber-50 dark:text-amber-600'}`} >Rs</div>
@@ -485,14 +491,14 @@ export const VendorTransactions = () => {
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white transition-colors hover:bg-green-700 shadow-md sm:w-auto"
                 >
                   <Plus className="h-5 w-5" />
-                  <span>Record Purchase</span>
+                  <span>{t('vendorAccounts.recordPurchase')}</span>
                 </button>
                 <button
                   onClick={() => openTransactionDialog('OUT')}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3 text-white transition-colors hover:bg-red-700 shadow-md sm:w-auto"
                 >
                   <Plus className="h-5 w-5" />
-                  <span>Record Payment</span>
+                  <span>{t('vendorAccounts.recordPayment')}</span>
                 </button>
               </div>
 
@@ -500,7 +506,7 @@ export const VendorTransactions = () => {
                 <div className="card overflow-hidden bg-white dark:bg-slate-900">
                 {/* Header with Filter */}
                 <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{t('vendorAccounts.transactionHistory')}</h3>
                   <div className="flex items-center space-x-2">
                     <Filter className="h-4 w-4 text-gray-400" />
                     <select
@@ -508,9 +514,9 @@ export const VendorTransactions = () => {
                       onChange={(e) => setFilterType(e.target.value)}
                       className="input-field text-sm"
                     >
-                      <option value="all">All Transactions</option>
-                      <option value="IN">Purchases Only</option>
-                      <option value="OUT">Payments Only</option>
+                      <option value="all">{t('vendorAccounts.allTransactions')}</option>
+                      <option value="IN">{t('vendorAccounts.purchasesOnly')}</option>
+                      <option value="OUT">{t('vendorAccounts.paymentsOnly')}</option>
                     </select>
                   </div>
                 </div>
@@ -520,12 +526,12 @@ export const VendorTransactions = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-700">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">Date</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">Type</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">Amount</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">Description</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">Reference</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">Action</th>
+                        <th className="px-6 py-4 text-start text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">{t('vendorAccounts.colDate')}</th>
+                        <th className="px-6 py-4 text-start text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">{t('vendorAccounts.colType')}</th>
+                        <th className="px-6 py-4 text-start text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">{t('vendorAccounts.colAmount')}</th>
+                        <th className="px-6 py-4 text-start text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">{t('vendorAccounts.colDescription')}</th>
+                        <th className="px-6 py-4 text-start text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">{t('vendorAccounts.colReference')}</th>
+                        <th className="px-6 py-4 text-start text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide whitespace-nowrap">{t('vendorAccounts.colAction')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
@@ -533,7 +539,7 @@ export const VendorTransactions = () => {
                         pagedTransactions.map(transaction => (
                           <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100">
-                              {new Date(transaction.transaction_date).toLocaleDateString('en-PK', {
+                              {new Date(transaction.transaction_date).toLocaleDateString(language === 'ur' ? 'ur-PK' : 'en-PK', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric'
@@ -545,14 +551,14 @@ export const VendorTransactions = () => {
                                   ? 'bg-green-400 dark:bg-green-700 text-green-800 dark:text-green-100'
                                   : 'bg-red-200 dark:bg-red-700 text-red-700 dark:text-red-100'
                               }`}>
-                                {transaction.transaction_type === 'IN' ? 'Purchase' : 'Payment'}
+                                {transaction.transaction_type === 'IN' ? t('vendorAccounts.typePurchase') : t('vendorAccounts.typePayment')}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-slate-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-slate-50 numeric-cell">
                               Rs {Number(transaction.amount).toFixed(2)}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-200 whitespace-nowrap">
-                              {transaction.description || '-'}
+                              {transaction.description ? td(transaction.description) : '-'}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-200 whitespace-nowrap">
                               {transaction.reference_no || '-'}
@@ -561,7 +567,7 @@ export const VendorTransactions = () => {
                               <button
                                 onClick={() => handleDeleteTransaction(transaction.id)}
                                 className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded transition-colors"
-                                title="Delete transaction"
+                                title={t('vendorAccounts.deleteTransaction')}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
@@ -571,8 +577,8 @@ export const VendorTransactions = () => {
                       ) : (
                         <tr>
                           <td colSpan="6" className="px-6 py-12 text-center text-gray-500 dark:text-slate-200">
-                            <p className="font-medium">No transactions found</p>
-                            <p className="text-sm">Start by recording a purchase or payment</p>
+                            <p className="font-medium">{t('vendorAccounts.noTransactions')}</p>
+                            <p className="text-sm">{t('vendorAccounts.startRecording')}</p>
                           </td>
                         </tr>
                       )}
@@ -589,8 +595,8 @@ export const VendorTransactions = () => {
           ) : (
             <div className="card p-12 rounded-lg   text-center">
               <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-slate-200 text-lg font-medium ">Select a vendor to view their account</p>
-              <p className="text-gray-500 dark:text-slate-300 text-sm mt-2">Choose from the vendor list to get started</p>
+              <p className="text-gray-600 dark:text-slate-200 text-lg font-medium ">{t('vendorAccounts.selectVendorPrompt')}</p>
+              <p className="text-gray-500 dark:text-slate-300 text-sm mt-2">{t('vendorAccounts.selectVendorHint')}</p>
             </div>
           )}
         </div>
@@ -611,7 +617,7 @@ export const VendorTransactions = () => {
                   )}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {formData.transaction_type === 'IN' ? 'Record Purchase' : 'Record Payment'}
+                  {formData.transaction_type === 'IN' ? t('vendorAccounts.recordPurchase') : t('vendorAccounts.recordPayment')}
                 </h3>
               </div>
               <button
@@ -626,7 +632,7 @@ export const VendorTransactions = () => {
                 <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Amount (Rs) *
+                  {t('vendorAccounts.amountLabel')}
                 </label>
                 <input
                   type="number"
@@ -642,7 +648,7 @@ export const VendorTransactions = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description
+                  {t('vendorAccounts.descriptionLabel')}
                 </label>
                 <input
                   type="text"
@@ -650,13 +656,13 @@ export const VendorTransactions = () => {
                   value={formData.description}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="e.g., Invoice #123"
+                  placeholder={t('vendorAccounts.descriptionPlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Reference Number
+                  {t('vendorAccounts.referenceLabel')}
                 </label>
                 <input
                   type="text"
@@ -664,13 +670,13 @@ export const VendorTransactions = () => {
                   value={formData.reference_no}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="e.g., CHQ-456"
+                  placeholder={t('vendorAccounts.referencePlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Notes
+                  {t('vendorAccounts.notesLabel')}
                 </label>
                 <textarea
                   name="notes"
@@ -678,7 +684,7 @@ export const VendorTransactions = () => {
                   onChange={handleChange}
                   rows={3}
                   className="input-field textarea-field"
-                  placeholder="Additional notes..."
+                  placeholder={t('vendorAccounts.notesPlaceholder')}
                 />
               </div>
             </div>
@@ -689,7 +695,7 @@ export const VendorTransactions = () => {
                 onClick={() => setShowTransactionDialog(false)}
                 className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors font-medium"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleAddTransaction}
@@ -700,7 +706,7 @@ export const VendorTransactions = () => {
                     : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               >
-                {loading ? 'Recording...' : 'Record Transaction'}
+                {loading ? t('vendorAccounts.recording') : t('vendorAccounts.recordTransaction')}
               </button>
             </div>
           </div>

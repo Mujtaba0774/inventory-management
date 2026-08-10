@@ -13,12 +13,14 @@ import {
 import { useProducts } from '../hooks/useProducts';
 import { useNotification } from '../hooks/useNotification';
 import { useConfirm } from '../hooks/useConfirm';
+import { useLanguage } from '../hooks/useLanguage';
 import Pagination from './Pagination';
 
 export const DamagesHistory = () => {
   const { products, stockMovements, updateStockMovement, deleteStockMovement } = useProducts();
   const { showNotification } = useNotification();
   const { confirm } = useConfirm();
+  const { t, td, tEnum } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -89,14 +91,14 @@ export const DamagesHistory = () => {
         });
         showNotification({
           type: 'success',
-          title: 'Damage updated',
-          message: 'The damage record was updated.',
+          title: t('damages.updated'),
+          message: t('damages.updatedMessage'),
         });
       } catch (error) {
         showNotification({
           type: 'error',
-          title: 'Update failed',
-          message: error.message || 'Failed to update damage record',
+          title: t('damages.updateFailed'),
+          message: error.message || t('damages.updateFailedMessage'),
         });
       }
     }
@@ -106,10 +108,10 @@ export const DamagesHistory = () => {
 
   const handleDelete = async (id) => {
     const confirmed = await confirm({
-      title: 'Delete damage record',
-      message: 'Are you sure you want to delete this damage record?',
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
+      title: t('damages.deleteTitle'),
+      message: t('damages.deleteMessage'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
     });
 
     if (!confirmed) {
@@ -120,14 +122,14 @@ export const DamagesHistory = () => {
       await deleteStockMovement(id);
       showNotification({
         type: 'success',
-        title: 'Damage deleted',
-        message: 'The damage record was deleted.',
+        title: t('damages.deleted'),
+        message: t('damages.deletedMessage'),
       });
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Delete failed',
-        message: error.message || 'Failed to delete damage record',
+        title: t('damages.deleteFailed'),
+        message: error.message || t('damages.deleteFailedMessage'),
       });
     }
   };
@@ -137,7 +139,7 @@ export const DamagesHistory = () => {
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
   
   <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">
-    Damages History
+    {t('damages.title')}
   </h1>
 
   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600 dark:text-slate-400">
@@ -145,15 +147,15 @@ export const DamagesHistory = () => {
     {/* Icon + First Stat */}
     <div className="flex items-center gap-1 w-1/2 sm:w-auto">
       <Calendar className="h-4 w-4 flex-shrink-0 dark:text-slate-200" />
-      <span>Total: {damageMovements.length} records</span>
+      <span>{t('damages.total', { count: damageMovements.length })}</span>
     </div>
 
     <span className="w-1/2 sm:w-auto">
-      Qty: {totalDamageQuantity}
+      {t('damages.qty', { count: totalDamageQuantity })}
     </span>
 
     <span className="w-1/2 sm:w-auto">
-      Value: ₨ {totalDamageValue.toLocaleString()}
+      {t('damages.value', { amount: totalDamageValue.toLocaleString() })}
     </span>
   </div>
 </div>
@@ -162,13 +164,13 @@ export const DamagesHistory = () => {
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-lg dark:border dark:border-slate-700 p-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
+            <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
             <input
               type="text"
-              placeholder="Search product or SKU..."
+              placeholder={t('damages.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-10"
+              className="input-field ltr:pl-10 rtl:pr-10"
             />
           </div>
 
@@ -178,12 +180,12 @@ export const DamagesHistory = () => {
               type="date"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="input-field no-native-picker pr-10"
+              className="input-field no-native-picker ltr:pr-10 rtl:pl-10"
             />
             <button
               type="button"
               onClick={() => document.querySelector('#from-date-input').showPicker?.() || document.querySelector('#from-date-input').focus()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white"
+              className="absolute ltr:right-2 rtl:left-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white"
               aria-hidden
             >
               <Calendar className="h-4 w-4" />
@@ -196,12 +198,12 @@ export const DamagesHistory = () => {
               type="date"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className="input-field no-native-picker pr-10"
+              className="input-field no-native-picker ltr:pr-10 rtl:pl-10"
             />
             <button
               type="button"
               onClick={() => document.querySelector('#to-date-input').showPicker?.() || document.querySelector('#to-date-input').focus()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white"
+              className="absolute ltr:right-2 rtl:left-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white"
               aria-hidden
             >
               <Calendar className="h-4 w-4" />
@@ -213,15 +215,15 @@ export const DamagesHistory = () => {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="input-field"
           >
-            <option value="">All Categories</option>
+            <option value="">{t('common.allCategories')}</option>
             {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category} value={category}>{td(category)}</option>
             ))}
           </select>
 
           <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-slate-400">
             <Filter className="h-4 w-4" />
-            <span>{damageMovements.length} results</span>
+            <span>{t('damages.results', { count: damageMovements.length })}</span>
           </div>
         </div>
       </div>
@@ -229,23 +231,23 @@ export const DamagesHistory = () => {
       {/* Damages Table */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-lg dark:border dark:border-slate-700 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">Damage Transactions</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">{t('damages.transactions')}</h2>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Date</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Product</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">SKU</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Category</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Quantity</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Cost</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Total Loss</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Reason</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Reference</th>
-                <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">Actions</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colDate')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colProduct')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colSku')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colCategory')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colQuantity')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colCost')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colTotalLoss')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colReason')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colReference')}</th>
+                <th className="px-6 py-3 text-start font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider text-sm whitespace-nowrap">{t('damages.colActions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
@@ -257,27 +259,27 @@ export const DamagesHistory = () => {
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-slate-100 whitespace-nowrap">
                       {formatDate(movement.date)}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-50 whitespace-nowrap">{product?.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{product?.sku}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{product?.category}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-50 whitespace-nowrap">{td(product?.name)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap numeric-cell">{product?.sku}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{td(product?.category)}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-50 whitespace-nowrap">{movement.quantity}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">₨ {product?.cost.toLocaleString()}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-red-600 dark:text-red-400 whitespace-nowrap">₨ {totalLoss.toLocaleString()}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{movement.reason}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{movement.reference || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap numeric-cell">₨ {product?.cost.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-red-600 dark:text-red-400 whitespace-nowrap numeric-cell">₨ {totalLoss.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{tEnum('reasons', movement.reason)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 whitespace-nowrap">{movement.reference || t('common.na')}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleEdit(movement)}
                           className="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                          title="Edit"
+                          title={t('common.edit')}
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(movement.id)}
                           className="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                          title="Delete"
+                          title={t('common.delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -299,11 +301,11 @@ export const DamagesHistory = () => {
       {damageMovements.length === 0 && (
         <div className="text-center py-12">
           <Package className="h-12 w-12 text-gray-400 dark:text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-slate-50 mb-2">No damages found</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-slate-50 mb-2">{t('damages.noneFound')}</h3>
           <p className="text-gray-500 dark:text-slate-400">
-            {searchTerm || fromDate || toDate || selectedCategory 
-              ? "Try adjusting your filters" 
-              : "No damage records yet"
+            {searchTerm || fromDate || toDate || selectedCategory
+              ? t('damages.adjustFilters')
+              : t('damages.noRecords')
             }
           </p>
         </div>
@@ -316,7 +318,7 @@ export const DamagesHistory = () => {
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
               <div className="flex items-center space-x-3">
                 <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
-                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">Edit Damage</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-50">{t('damages.editDamage')}</h2>
               </div>
               <button
                 onClick={() => setShowModal(false)}
@@ -327,7 +329,7 @@ export const DamagesHistory = () => {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Quantity</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('common.quantity')}</label>
                 <input
                   type="number"
                   value={tempQuantity}
@@ -337,7 +339,7 @@ export const DamagesHistory = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('common.date')}</label>
                 <input
                   type="date"
                   value={tempDate}
@@ -346,25 +348,25 @@ export const DamagesHistory = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Reason</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('common.reason')}</label>
                 <select
                   value={tempReason}
                   onChange={(e) => setTempReason(e.target.value)}
                   className="input-field"
                 >
-                  <option value="Damage">Damage</option>
-                  <option value="Loss">Loss</option>
-                  <option value="Return to Vendor">Return to Vendor</option>
+                  <option value="Damage">{tEnum('reasons', 'Damage')}</option>
+                  <option value="Loss">{tEnum('reasons', 'Loss')}</option>
+                  <option value="Return to Vendor">{tEnum('reasons', 'Return to Vendor')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Reference</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('damages.colReference')}</label>
                 <input
                   type="text"
                   value={tempReference}
                   onChange={(e) => setTempReference(e.target.value)}
                   className="input-field"
-                  placeholder="Damage ID or reference"
+                  placeholder={t('damages.referencePlaceholder')}
                 />
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-slate-700">
@@ -373,14 +375,14 @@ export const DamagesHistory = () => {
                   onClick={() => setShowModal(false)}
                   className="px-4 py-2 text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg font-medium transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSaveEdit}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white rounded-lg flex items-center space-x-2 font-medium transition-colors"
                 >
                   <Save className="h-4 w-4" />
-                  <span>Update</span>
+                  <span>{t('common.update')}</span>
                 </button>
               </div>
             </div>

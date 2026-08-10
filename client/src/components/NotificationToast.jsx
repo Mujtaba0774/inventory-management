@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, CheckCircle2, Info, X, XCircle } from 'lucide-react';
 import { useNotification } from '../hooks/useNotification';
+import { useLanguage } from '../hooks/useLanguage';
 
 const stylesByType = {
   success: {
@@ -39,13 +40,14 @@ const stylesByType = {
 
 export const NotificationToast = () => {
   const { notifications, removeNotification } = useNotification();
+  const { t } = useLanguage();
 
   if (notifications.length === 0) {
     return null;
   }
 
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-[100] flex w-[min(92vw,420px)] flex-col gap-4">
+    <div className="pointer-events-none fixed ltr:right-4 rtl:left-4 top-4 z-[100] flex w-[min(92vw,420px)] flex-col gap-4">
       {notifications.map((item) => {
         const palette = stylesByType[item.type] ?? stylesByType.info;
         const Icon = palette.icon;
@@ -80,7 +82,7 @@ export const NotificationToast = () => {
                 type="button"
                 onClick={() => removeNotification(item.id)}
                 className="flex-shrink-0 rounded-lg p-1.5 text-gray-400 dark:text-gray-200 transition-all duration-200 hover:bg-black/10 hover:text-gray-600 active:scale-90"
-                aria-label="Close notification"
+                aria-label={t('notifications.close')}
               >
                 <X className="h-4 w-4" />
               </button>

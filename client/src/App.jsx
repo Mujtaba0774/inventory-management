@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
+import { LanguageProvider } from './context/LanguageContext';
+import { useLanguage } from './hooks/useLanguage';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { ProductList } from './components/ProductList';
@@ -16,15 +18,18 @@ import { ProductProvider } from './context/ProductContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
 
-function App() {
+function AppShell() {
+  const { t } = useLanguage();
   const [activeView, setActiveView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState();
   const [productListPreset, setProductListPreset] = useState({
     kind: 'all',
-    label: 'All Products',
+    // Presets carry a dictionary key so the banner follows the active language.
+    labelKey: 'products.allProducts',
     sortBy: 'name',
   });
 
@@ -46,7 +51,7 @@ function App() {
   const handleOpenProductsWithPreset = (preset) => {
     setProductListPreset({
       kind: preset?.kind ?? 'all',
-      label: preset?.label ?? 'All Products',
+      labelKey: preset?.labelKey ?? 'products.allProducts',
       sortBy: preset?.sortBy ?? 'name',
       refreshKey: Date.now(),
     });
@@ -134,6 +139,7 @@ function App() {
                   <button
                     onClick={() => setSidebarOpen(true)}
                     className="text-gray-600 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    aria-label={t('nav.openMenu')}
                   >
                     <Menu className="h-6 w-6" />
                   </button>
@@ -142,11 +148,14 @@ function App() {
                       <span className="text-white text-sm font-bold">F</span>
                     </div>
                     <div>
-                      <h1 className="text-base font-bold bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400 bg-clip-text text-transparent">Forrentech</h1>
-                      <p className="text-xs text-gray-500 dark:text-slate-400">Warehouse</p>
+                      <h1 className="text-base font-bold bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400 bg-clip-text text-transparent">{t('common.appName')}</h1>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{t('common.warehouse')}</p>
                     </div>
                   </div>
-                  <div className="w-6 mr-3 md:mr-0"> <ThemeSwitcher /></div>
+                  <div className="flex items-center">
+                    <LanguageSwitcher />
+                    <ThemeSwitcher />
+                  </div>
                 </div>
               </div>
 
@@ -169,6 +178,16 @@ function App() {
         </ProductProvider>
       </ConfirmProvider>
     </NotificationProvider>
+  );
+}
+
+// LanguageProvider wraps everything so that ConfirmProvider's default dialog
+// copy and every screen below it can call `t()`.
+function App() {
+  return (
+    <LanguageProvider>
+      <AppShell />
+    </LanguageProvider>
   );
 }
 

@@ -536,3 +536,74 @@
     font-size: 0.875rem;
   }
 }
+
+/* ===== RIGHT-TO-LEFT (URDU) SUPPORT ===== */
+/* Activated by dir="rtl" on <html>, set by LanguageProvider. */
+
+[dir='rtl'] {
+  /* Naskh reads far better than Nastaliq in dense tables and forms. Falls back
+     through fonts commonly installed on Windows and Linux before system-ui. */
+  font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma,
+    'Jameel Noori Nastaleeq', system-ui, sans-serif;
+}
+
+/* Urdu glyphs sit taller than Latin ones, so they need a little more room. */
+[dir='rtl'] body {
+  line-height: 1.85;
+}
+
+[dir='rtl'] h1,
+[dir='rtl'] h2,
+[dir='rtl'] h3,
+[dir='rtl'] h4 {
+  line-height: 1.6;
+}
+
+/* Tailwind's space-x-* utilities apply margin-left, which lands on the wrong
+   side once the flex axis flips. Setting the reverse flag reuses Tailwind's own
+   mechanism instead of hand-patching every value. */
+[dir='rtl'] [class*='space-x-'] > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+/* The active nav item draws its accent bar with a left border plus an inset
+   shadow; both need to move to the right edge. */
+[dir='rtl'] .nav-item.active {
+  border-left-width: 0;
+  border-right-width: 4px;
+  box-shadow: inset -4px 0 0 0 var(--primary-color, #0ea5e9);
+}
+
+/* Toasts slide in from the near edge in both directions. */
+[dir='rtl'] .toast {
+  animation-name: slideInLeft;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Numbers, SKUs, prices and dates stay left-to-right even inside Urdu text. */
+[dir='rtl'] .force-ltr {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Keep tabular data readable: numeric cells stay LTR, text cells follow the page. */
+[dir='rtl'] .numeric-cell {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Decorative left accent bars on stat cards belong on the right in RTL. */
+[dir='rtl'] .accent-bar {
+  border-left-width: 0;
+  border-right-width: 4px;
+}

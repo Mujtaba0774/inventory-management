@@ -13,6 +13,7 @@ import {
 import { useProducts } from '../hooks/useProducts';
 import { useBatchSummary } from '../hooks/useBatchSummary';
 import { useNotification } from '../hooks/useNotification';
+import { useLanguage } from '../hooks/useLanguage';
 import { mockVendors } from '../data/mockData';
 import Pagination from './Pagination';
 
@@ -23,6 +24,7 @@ const ADD_NEW_VENDOR_VALUE = '__add_new_vendor__';
 export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSalesHistory, onNavigateToDamagesHistory }) => {
   const { products, stockMovements, updateStock, getBatchesForProduct } = useProducts();
   const { showNotification } = useNotification();
+  const { t, td, tEnum } = useLanguage();
   const productIds = useMemo(() => products.map((product) => product.id), [products]);
   const batchSummaryByProduct = useBatchSummary(productIds);
   const [vendors, setVendors] = useState([]);
@@ -81,7 +83,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
         const response = await fetch('/api/vendors');
 
         if (!response.ok) {
-          throw new Error('Failed to load vendors');
+          throw new Error(t('stock.loadVendorsFailed'));
         }
 
         const data = await response.json();
@@ -89,14 +91,14 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
       } catch (error) {
         showNotification({
           type: 'warning',
-          title: 'Vendors unavailable',
-          message: error.message || 'Could not load vendors list.',
+          title: t('stock.vendorsUnavailable'),
+          message: error.message || t('stock.vendorsUnavailableMessage'),
         });
       }
     };
 
     loadVendors();
-  }, [showNotification]);
+  }, [showNotification, t]);
 
   useEffect(() => {
     const loadBatches = async () => {
@@ -127,7 +129,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     const trimmedName = newVendorName.trim();
 
     if (!trimmedName) {
-      throw new Error('Vendor name is required');
+      throw new Error(t('stock.vendorNameRequired'));
     }
 
     const existingVendor = vendors.find(
@@ -159,13 +161,13 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to create vendor');
+      throw new Error(data.message || t('stock.vendorCreateFailed'));
     }
 
     const createdVendor = data.vendor;
 
     if (!createdVendor?.id) {
-      throw new Error('Vendor created but missing id');
+      throw new Error(t('stock.vendorMissingId'));
     }
 
     setVendors((current) => {
@@ -211,8 +213,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     if (!selectedProduct || quantity <= 0 || !reason.trim()) {
       showNotification({
         type: 'warning',
-        title: 'Missing details',
-        message: 'Select a product, set quantity, and choose a reason.',
+        title: t('stock.missingDetails'),
+        message: t('stock.missingDetailsMessage'),
       });
       return;
     }
@@ -220,8 +222,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     if (requiresVendor && !selectedVendor) {
       showNotification({
         type: 'warning',
-        title: 'Vendor required',
-        message: 'Choose the vendor for this buy/sell movement.',
+        title: t('stock.vendorRequiredTitle'),
+        message: t('stock.vendorRequiredMessage'),
       });
       return;
     }
@@ -231,8 +233,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     if (!product) {
       showNotification({
         type: 'error',
-        title: 'Product not found',
-        message: 'The selected product could not be matched.',
+        title: t('stock.productNotFound'),
+        message: t('stock.productNotFoundMessage'),
       });
       return;
     }
@@ -240,8 +242,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     if (movementType === 'out' && availableStock - quantity < 0) {
       showNotification({
         type: 'warning',
-        title: 'Insufficient stock',
-        message: `You only have ${availableStock} units available.`,
+        title: t('stock.insufficientStock'),
+        message: t('stock.insufficientStockMessage', { count: availableStock }),
       });
       return;
     }
@@ -273,8 +275,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
 
       showNotification({
         type: 'success',
-        title: 'Stock updated',
-        message: `${product.name} stock was adjusted successfully.`,
+        title: t('stock.updated'),
+        message: t('stock.updatedMessage', { name: product.name }),
       });
       setQuantity(0);
       setNewSellingPrice('');
@@ -286,8 +288,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
     } catch (error) {
       showNotification({
         type: 'error',
-        title: 'Stock update failed',
-        message: error.message || 'Failed to update stock',
+        title: t('stock.updateFailed'),
+        message: error.message || t('stock.updateFailedMessage'),
       });
     }
   };
@@ -310,10 +312,10 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">Stock Management</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-slate-50">{t('stock.title')}</h1>
         <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-slate-200">
           <Clock className="h-4 w-4" />
-          <span>Last updated: {new Date().toLocaleString()}</span>
+          <span>{t('stock.lastUpdated', { time: new Date().toLocaleString() })}</span>
         </div>
       </div>
 
@@ -322,46 +324,46 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
         <div className="card p-6">
           <div className="flex items-center space-x-2 mb-4">
             <Package className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">Update Stock</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50">{t('stock.updateStock')}</h2>
           </div>
 
           <form onSubmit={handleStockUpdate} className="space-y-3">
             {/* Product Search */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Search Product
+                {t('stock.searchProduct')}
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-10"
-                  placeholder="Search by name or SKU..."
+                  className="input-field ltr:pl-10 rtl:pr-10"
+                  placeholder={t('stock.searchPlaceholder')}
                 />
               </div>
               {!hasAnyProducts && (
                 <div className="mt-2 rounded-md border border-red-200 bg-red-100 p-3 text-sm text-red-700 dark:border-red-500 dark:bg-red-900 dark:text-red-300">
-                  <p>No products found yet. Add a product first to manage stock.</p>
+                  <p>{t('stock.noProductsYet')}</p>
                   <button
                     type="button"
                     onClick={() => onAddProduct?.()}
                     className="mt-2 inline-flex items-center rounded-md bg-blue-500 px-3 py-1.5 font-medium text-white transition-colors hover:bg-blue-700"
                   >
-                    Add Product
+                    {t('stock.addProduct')}
                   </button>
                 </div>
               )}
               {hasAnyProducts && searchTerm.trim() && !hasMatchingProducts && (
                 <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                  <p>No product matches your search. You can add it as a new product.</p>
+                  <p>{t('stock.noMatch')}</p>
                   <button
                     type="button"
                     onClick={() => onAddProduct?.()}
                     className="mt-2 inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 font-medium text-white transition-colors hover:bg-blue-700"
                   >
-                    Add Product
+                    {t('stock.addProduct')}
                   </button>
                 </div>
               )}
@@ -370,7 +372,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {/* Product Selection */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Select Product *
+                {t('stock.selectProduct')}
               </label>
               <select
                 value={selectedProduct}
@@ -378,13 +380,17 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                 className="input-field"
                 required
               >
-                <option value="">Choose a product</option>
+                <option value="">{t('stock.chooseProduct')}</option>
                 {filteredProducts.map(product => (
                   <option key={product.id} value={product.id}>
-                    {product.name} - {product.sku} (Current: {Number(batchSummaryByProduct[product.id]?.totalQuantity ?? product.stock ?? 0)})
+                    {t('stock.productOption', {
+                      name: td(product.name),
+                      sku: product.sku,
+                      stock: Number(batchSummaryByProduct[product.id]?.totalQuantity ?? product.stock ?? 0),
+                    })}
                   </option>
                 ))}
-                <option value={ADD_NEW_PRODUCT_VALUE}>+ Add new product</option>
+                <option value={ADD_NEW_PRODUCT_VALUE}>{t('stock.addNewProduct')}</option>
               </select>
             </div>
 
@@ -393,32 +399,32 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
               <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-slate-50">{selectedProductData.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-slate-200">SKU: <span className="font-medium text-gray-900 dark:text-slate-50">{selectedProductData.sku}</span></p>
+                    <p className="font-medium text-gray-900 dark:text-slate-50">{td(selectedProductData.name)}</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-200">{t('common.sku')}: <span className="font-medium text-gray-900 dark:text-slate-50 force-ltr">{selectedProductData.sku}</span></p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="text-lg font-bold text-gray-900 dark:text-slate-50">{availableStock}</p>
-                    <p className="text-sm text-gray-600 dark:text-slate-200">Current Stock</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-200">{t('stock.currentStock')}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600 dark:text-slate-200">
-                    <div>Selling: <span className="font-medium text-gray-900 dark:text-slate-50">₨ {Number(selectedProductData.price ?? 0).toFixed(2)}</span></div>
-                    <div>Cost: <span className="font-medium text-gray-900 dark:text-slate-50">₨ {Number(selectedProductData.cost ?? 0).toFixed(2)}</span></div>
+                    <div>{t('stock.selling')} <span className="font-medium text-gray-900 dark:text-slate-50 force-ltr">₨ {Number(selectedProductData.price ?? 0).toFixed(2)}</span></div>
+                    <div>{t('stock.cost')} <span className="font-medium text-gray-900 dark:text-slate-50 force-ltr">₨ {Number(selectedProductData.cost ?? 0).toFixed(2)}</span></div>
                   </div>
                   <div />
                 </div>
                 {availableStock === 0 && (
                   <div className="mt-2 p-2 bg-red-100 rounded border border-red-200">
                     <p className="text-xs text-red-700">
-                      ❌ Out of stock
+                      {t('stock.outOfStock')}
                     </p>
                   </div>
                 )}
                 {availableStock > 0 && availableStock <= Number(selectedProductData.minStock ?? 0) && (
                   <div className="mt-2 p-2 bg-orange-100 rounded border border-orange-200">
                     <p className="text-xs text-orange-700">
-                      ⚠️ Below minimum stock level ({selectedProductData.minStock})
+                      {t('stock.belowMinimum', { count: selectedProductData.minStock })}
                     </p>
                   </div>
                 )}
@@ -428,7 +434,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {/* Movement Type */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Movement Type *
+                {t('stock.movementType')}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -441,7 +447,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                   }`}
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Stock In</span>
+                  <span>{t('stock.stockIn')}</span>
                 </button>
                 <button
                   type="button"
@@ -453,7 +459,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                   }`}
                 >
                   <Minus className="h-4 w-4" />
-                  <span>Stock Out</span>
+                  <span>{t('stock.stockOut')}</span>
                 </button>
               </div>
             </div>
@@ -461,7 +467,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {/* Quantity */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Quantity *
+                {t('stock.quantity')}
               </label>
                 <input
                 type="number"
@@ -469,7 +475,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                 onChange={(e) => setQuantity(parseInt(e.target.value))}
                 min="1"
                 className="input-field"
-                placeholder="Enter quantity"
+                placeholder={t('stock.quantityPlaceholder')}
                 required
                   disabled={!hasMatchingProducts}
               />
@@ -477,7 +483,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
 
             {/* New Selling Price */}
             <div>
-              <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">New Selling Price (optional)</label>
+              <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">{t('stock.newSellingPrice')}</label>
               <input
                 type="number"
                 value={newSellingPrice}
@@ -485,13 +491,13 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                 min="0"
                 step="1"
                 className="input-field"
-                placeholder="Set as new product selling price"
+                placeholder={t('stock.newSellingPricePlaceholder')}
               />
             </div>
 
             {/* New Cost Price */}
             <div>
-              <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">New Cost Price (optional)</label>
+              <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">{t('stock.newCostPrice')}</label>
               <input
                 type="number"
                 value={newCostPrice}
@@ -499,7 +505,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                 min="0"
                 step="1"
                 className="input-field"
-                placeholder="Set as new product cost price"
+                placeholder={t('stock.newCostPricePlaceholder')}
               />
             </div>
 
@@ -507,26 +513,30 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {movementType === 'out' && batches.length > 0 && (
               <div>
                 <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                  Select Batch (Optional - FIFO default)
+                  {t('stock.selectBatch')}
                 </label>
                 <select
                   value={selectedBatch}
                   onChange={(e) => setSelectedBatch(e.target.value)}
                   className="input-field"
                 >
-                  <option value="">Use oldest batch (FIFO)</option>
+                  <option value="">{t('stock.useOldestBatch')}</option>
                   {batches.map((batch) => (
                     <option key={batch.id} value={batch.id}>
-                      {batch.vendor_name || batch.vendor_name || 'No Vendor'} - Cost ₨ {Number(batch.unit_price ?? 0).toFixed(2)} ({batch.quantity} units)
+                      {t('stock.batchOption', {
+                        vendor: batch.vendor_name ? td(batch.vendor_name) : t('stock.noVendor'),
+                        price: Number(batch.unit_price ?? 0).toFixed(2),
+                        quantity: batch.quantity,
+                      })}
                     </option>
                   ))}
                 </select>
                 {selectedBatchData && (
                   <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-900 dark:border-blue-500 p-3 text-sm text-blue-900 dark:text-blue-100">
-                    <p className="font-medium">Selected batch</p>
-                    <p>Batch Cost: ₨ {Number(selectedBatchData.unit_price ?? 0).toFixed(2)}</p>
-                    <p>Available: {selectedBatchData.quantity} units</p>
-                    <p className="text-xs mt-1">If the requested quantity is larger than this batch, the rest will be taken from older batches automatically.</p>
+                    <p className="font-medium">{t('stock.selectedBatch')}</p>
+                    <p>{t('stock.batchCost', { price: Number(selectedBatchData.unit_price ?? 0).toFixed(2) })}</p>
+                    <p>{t('stock.batchAvailable', { count: selectedBatchData.quantity })}</p>
+                    <p className="text-xs mt-1">{t('stock.batchOverflowNote')}</p>
                   </div>
                 )}
               </div>
@@ -535,7 +545,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {/* Reason */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Reason *
+                {t('stock.reason')}
               </label>
                 <select
                 value={reason}
@@ -543,19 +553,19 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                 className="input-field"
                 required
               >
-                <option value="">Select reason</option>
+                <option value="">{t('stock.selectReason')}</option>
                 {movementType === 'in' ? (
                   <>
-                    <option value="Purchase">Purchase</option>
-                    <option value="Restock">Restock</option>
-                    <option value="Return">Return</option>
+                    <option value="Purchase">{tEnum('reasons', 'Purchase')}</option>
+                    <option value="Restock">{tEnum('reasons', 'Restock')}</option>
+                    <option value="Return">{tEnum('reasons', 'Return')}</option>
                   </>
                 ) : (
                   <>
-                    <option value="Sale">Sale</option>
-                    <option value="Damage">Damage</option>
-                    <option value="Loss">Loss</option>
-                    <option value="Return to Vendor">Return to Vendor</option>
+                    <option value="Sale">{tEnum('reasons', 'Sale')}</option>
+                    <option value="Damage">{tEnum('reasons', 'Damage')}</option>
+                    <option value="Loss">{tEnum('reasons', 'Loss')}</option>
+                    <option value="Return to Vendor">{tEnum('reasons', 'Return to Vendor')}</option>
                   </>
                 )}
               </select>
@@ -564,7 +574,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {/* Vendor */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Vendor {requiresVendor ? '*' : '(Optional)'}
+                {requiresVendor ? t('stock.vendorRequired') : t('stock.vendorOptional')}
               </label>
               <select
                 value={selectedVendor}
@@ -572,13 +582,13 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                 className="input-field"
                 required={requiresVendor}
               >
-                <option value="">{requiresVendor ? 'Select vendor' : 'No vendor selected'}</option>
+                <option value="">{requiresVendor ? t('stock.selectVendor') : t('stock.noVendorSelected')}</option>
                 {vendors.map((vendor) => (
                   <option key={vendor.id} value={vendor.id}>
-                    {vendor.name}
+                    {td(vendor.name)}
                   </option>
                 ))}
-                <option value={ADD_NEW_VENDOR_VALUE}>+ Add new vendor</option>
+                <option value={ADD_NEW_VENDOR_VALUE}>{t('stock.addNewVendor')}</option>
               </select>
               {isAddingNewVendor && (
                 <input
@@ -586,7 +596,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                   value={newVendorName}
                   onChange={(e) => setNewVendorName(e.target.value)}
                   className="input-field mt-2"
-                  placeholder="Type new vendor name"
+                  placeholder={t('stock.newVendorPlaceholder')}
                   required={requiresVendor}
                 />
               )}
@@ -595,7 +605,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
             {/* Movement Date Time */}
             <div>
               <label className="block text-md font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Date and Time *
+                {t('stock.dateAndTime')}
               </label>
               <div className="relative">
                 <input
@@ -603,7 +613,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                   type="datetime-local"
                   value={movementDateTime}
                   onChange={(e) => setMovementDateTime(e.target.value)}
-                  className="input-field pr-10 no-native-picker"
+                  className="input-field ltr:pr-10 rtl:pl-10 no-native-picker"
                   required
                 />
                 <button
@@ -616,8 +626,8 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                       input.showPicker();
                     }
                   }}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 dark:text-slate-300"
-                  aria-label="Open date picker"
+                  className="absolute inset-y-0 ltr:right-0 rtl:left-0 flex items-center px-3 text-slate-500 dark:text-slate-300"
+                  aria-label={t('stock.openDatePicker')}
                 >
                   <Calendar className="h-4 w-4" />
                 </button>
@@ -626,9 +636,13 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
 
             {estimatedTotal !== null && (
               <div className="rounded-md border border-green-200 bg-green-50 dark:bg-green-900 dark:border-green-500 p-3 text-sm text-green-900 dark:text-green-100">
-                <p className="font-medium">Calculated total</p>
-                <p>
-                  {quantity} x ₨ {movementBasePrice.toFixed(2)} = ₨ {estimatedTotal.toFixed(2)}
+                <p className="font-medium">{t('stock.calculatedTotal')}</p>
+                <p className="force-ltr">
+                  {t('stock.calculatedTotalLine', {
+                    quantity,
+                    price: movementBasePrice.toFixed(2),
+                    total: estimatedTotal.toFixed(2),
+                  })}
                 </p>
               </div>
             )}
@@ -642,7 +656,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                   : 'bg-red-600 hover:bg-red-700'
               }`}
             >
-              {movementType === 'in' ? 'Add Stock' : 'Remove Stock'}
+              {movementType === 'in' ? t('stock.addStock') : t('stock.removeStock')}
             </button>
           </form>
         </div>
@@ -651,12 +665,12 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
         <div className="card p-6">
           <div className="flex items-center space-x-3 mb-3">
             <TrendingUp className="h-6 w-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-300">Recent Movements</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-300">{t('stock.recentMovements')}</h2>
           </div>
 
           <div className="space-y-3">
             {recentMovements.length === 0 ? (
-              <p className="text-gray-500 dark:text-slate-200 text-center py-8">No stock movements yet</p>
+              <p className="text-gray-500 dark:text-slate-200 text-center py-8">{t('stock.noMovements')}</p>
             ) : (
               recentMovements.map((movement) => {
                 const product = products.find((p) => String(p.id) === String(movement.productId));
@@ -685,7 +699,7 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                     key={movement.id}
                     type="button"
                     onClick={handleMovementClick}
-                    className="w-full flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-500 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-left"
+                    className="w-full flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-500 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-start"
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`p-2 rounded-full ${
@@ -694,21 +708,21 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
                         {getMovementIcon(movement.type)}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-slate-300">{product?.name}</p>
-                        <p className={`text-sm ${movementTextColor}`}>{movement.reason}</p>
-                        {(movement.vendor_name || movement.vendor_name) && (
-                          <p className="text-xs text-gray-500 dark:text-slate-200">Vendor: {movement.vendor_name || movement.vendor_name}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-300">{td(product?.name)}</p>
+                        <p className={`text-sm ${movementTextColor}`}>{tEnum('reasons', movement.reason)}</p>
+                        {movement.vendor_name && (
+                          <p className="text-xs text-gray-500 dark:text-slate-200">{t('stock.vendorLabel', { name: td(movement.vendor_name) })}</p>
                         )}
-                        <p className="text-xs text-gray-500 dark:text-slate-200">{formatMovementDate(movement.date)}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-200 force-ltr">{formatMovementDate(movement.date)}</p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       {movementTotalAmount !== null && movementTotalAmount !== undefined && (
-                        <p className={`text-sm font-medium ${movementTextColor}`}>
+                        <p className={`text-sm font-medium force-ltr ${movementTextColor}`}>
                           Rs {Number(movementTotalAmount).toFixed(2)}
                         </p>
                       )}
-                      <p className={`font-bold ${
+                      <p className={`font-bold force-ltr ${
                         movement.type === 'in' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-500'
                       }`}>
                         {movement.type === 'in' ? '+' : '-'}{movement.quantity}
@@ -728,28 +742,28 @@ export const StockManagement = ({ onEditProduct, onAddProduct, onNavigateToSales
       {/* Inventory Batches */}
       {selectedProduct && batches.length > 0 && (
         <div className="bg-white dark:bg-slate-900 rounded-md shadow-md dark:shadow-lg dark:border dark:border-slate-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50 mb-6">Inventory Batches</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-50 mb-6">{t('stock.inventoryBatches')}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">Vendor</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">Unit Price</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">Quantity</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">Total Value</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">Batch Date</th>
+                  <th className="px-4 py-3 text-start font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">{t('stock.colVendor')}</th>
+                  <th className="px-4 py-3 text-start font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">{t('stock.colUnitPrice')}</th>
+                  <th className="px-4 py-3 text-start font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">{t('stock.colQuantity')}</th>
+                  <th className="px-4 py-3 text-start font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">{t('stock.colTotalValue')}</th>
+                  <th className="px-4 py-3 text-start font-medium text-gray-700 dark:text-slate-200 whitespace-nowrap">{t('stock.colBatchDate')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                 {pagedBatches.map((batch) => (
                   <tr key={batch.id} className="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 whitespace-nowrap">{batch.vendor_name || batch.vendor_name || '-'}</td>
-                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 whitespace-nowrap">Rs {Number(batch.unit_price).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 whitespace-nowrap">{batch.quantity} units</td>
-                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 font-medium whitespace-nowrap">
+                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 whitespace-nowrap">{batch.vendor_name ? td(batch.vendor_name) : '-'}</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 whitespace-nowrap numeric-cell">Rs {Number(batch.unit_price).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 whitespace-nowrap">{t('stock.unitsCount', { count: batch.quantity })}</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-slate-50 font-medium whitespace-nowrap numeric-cell">
                       Rs {(Number(batch.unit_price) * batch.quantity).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-slate-200 text-xs whitespace-nowrap">
+                    <td className="px-4 py-3 text-gray-600 dark:text-slate-200 text-xs whitespace-nowrap numeric-cell">
                       {new Date(batch.batch_date).toLocaleDateString()}
                     </td>
                   </tr>

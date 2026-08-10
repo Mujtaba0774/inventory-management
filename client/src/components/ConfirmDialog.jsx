@@ -1,18 +1,24 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 
 export const ConfirmDialog = ({
   open,
   title,
   message,
-  confirmLabel = 'Delete',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
 }) => {
+  const { t } = useLanguage();
+
   if (!open) {
     return null;
   }
+
+  const resolvedConfirmLabel = confirmLabel ?? t('common.delete');
+  const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
@@ -25,13 +31,13 @@ export const ConfirmDialog = ({
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-red-900 dark:text-red-200">{title}</h2>
-              <p className="text-red-700 dark:text-red-400 text-sm mt-1">Please review this action carefully</p>
+              <p className="text-red-700 dark:text-red-400 text-sm mt-1">{t('confirm.reviewCarefully')}</p>
             </div>
             <button
               type="button"
               onClick={onCancel}
               className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
-              aria-label="Close"
+              aria-label={t('common.close')}
             >
               <X className="h-5 w-5" />
             </button>
@@ -50,14 +56,14 @@ export const ConfirmDialog = ({
             onClick={onCancel}
             className="flex-1 btn-secondary py-1.5 rounded-lg"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="flex-1 btn-danger py-1.5 rounded-lg"
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </button>
         </div>
       </div>

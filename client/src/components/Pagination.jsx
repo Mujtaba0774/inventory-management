@@ -1,6 +1,9 @@
 import React from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 
 export const Pagination = ({ currentPage, totalPages, onChange }) => {
+  const { t } = useLanguage();
+
   if (totalPages <= 1) return null;
 
   const pages = [];
@@ -11,7 +14,7 @@ export const Pagination = ({ currentPage, totalPages, onChange }) => {
   return (
     <div className="flex items-center justify-between mt-4">
       <div className="text-sm text-gray-600 dark:text-gray-300">
-        Page {currentPage} of {totalPages}
+        {t('pagination.pageOf', { current: currentPage, total: totalPages })}
       </div>
 
       <div className="flex items-center space-x-2">
@@ -20,7 +23,7 @@ export const Pagination = ({ currentPage, totalPages, onChange }) => {
           className="px-3 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50"
           disabled={currentPage === 1}
         >
-          Prev
+          {t('pagination.prev')}
         </button>
 
         {pages.map((p) => (
@@ -38,7 +41,7 @@ export const Pagination = ({ currentPage, totalPages, onChange }) => {
           className="px-3 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50"
           disabled={currentPage === totalPages}
         >
-          Next
+          {t('pagination.next')}
         </button>
       </div>
     </div>

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 
 export const ThemeSwitcher = () => {
+  const { t } = useLanguage();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -36,8 +38,8 @@ export const ThemeSwitcher = () => {
     <button
       onClick={toggleTheme}
       className="flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
-      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      aria-label="Toggle theme"
+      title={isDark ? t('theme.switchToLight') : t('theme.switchToDark')}
+      aria-label={t('theme.toggle')}
     >
       {isDark ? (
         <Sun className="h-5 w-5" />

@@ -10,23 +10,32 @@ import {
   Users,
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { useLanguage } from '../hooks/useLanguage';
 
-export const Sidebar = ({ 
-  activeView, 
-  setActiveView, 
-  isOpen, 
-  setIsOpen 
+export const Sidebar = ({
+  activeView,
+  setActiveView,
+  isOpen,
+  setIsOpen
 }) => {
+  const { t, isRTL } = useLanguage();
+
+  // The off-screen transform is picked in JS rather than with `rtl:`/`ltr:`
+  // variants: those compile to `[dir="..."] .class`, which outranks the
+  // `lg:translate-x-0` that pins the sidebar open on desktop.
+  const closedTransform = isRTL ? 'translate-x-full' : '-translate-x-full';
+
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'stock', label: 'Stock Management', icon: TrendingUp },
-    { id: 'currentStock', label: 'Current Stock', icon: Package },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'sales', label: 'Sales History', icon: TrendingUp },
-    { id: 'damages', label: 'Damages History', icon: AlertTriangle },
-    { id: 'vendor-management', label: 'Vendors', icon: Users },
-    { id: 'vendor-transactions', label: 'Vendor Accounts', icon: DollarSign },
+    { id: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+    { id: 'products', labelKey: 'nav.products', icon: Package },
+    { id: 'stock', labelKey: 'nav.stock', icon: TrendingUp },
+    { id: 'currentStock', labelKey: 'nav.currentStock', icon: Package },
+    { id: 'analytics', labelKey: 'nav.analytics', icon: BarChart3 },
+    { id: 'sales', labelKey: 'nav.sales', icon: TrendingUp },
+    { id: 'damages', labelKey: 'nav.damages', icon: AlertTriangle },
+    { id: 'vendor-management', labelKey: 'nav.vendors', icon: Users },
+    { id: 'vendor-transactions', labelKey: 'nav.vendorAccounts', icon: DollarSign },
   ];
 
   return (
@@ -42,9 +51,10 @@ export const Sidebar = ({
       {/* Sidebar */}
       <div
         className={`
-          fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 transition-transform duration-300
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:border-r
+          fixed top-0 h-screen bg-white dark:bg-slate-900 z-50 transition-transform duration-300
+          ltr:left-0 ltr:border-r rtl:right-0 rtl:border-l border-slate-200 dark:border-slate-800
+          ${isOpen ? 'translate-x-0' : closedTransform}
+          lg:translate-x-0 lg:static
           w-64
           flex flex-col
         `}
@@ -57,13 +67,14 @@ export const Sidebar = ({
                 <Package className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gradient">Forrentech</h1>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-200">Warehouse</p>
+                <h1 className="text-lg font-bold text-gradient">{t('common.appName')}</h1>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-200">{t('common.warehouse')}</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="lg:hidden icon-button"
+              aria-label={t('common.close')}
             >
               <X className="h-5 w-5" />
             </button>
@@ -82,23 +93,27 @@ export const Sidebar = ({
               className={`nav-item w-full group ${activeView === item.id ? 'active' : ''}`}
             >
               <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110 ${activeView === item.id ? 'text-primary-600 dark:text-primary-400' : 'text-slate-600 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-slate-100'}`} />
-              <span className={`whitespace-nowrap ${activeView === item.id ? 'text-primary-700 dark:text-primary-300' : ''}`}>{item.label}</span>
+              <span className={`whitespace-nowrap ${activeView === item.id ? 'text-primary-700 dark:text-primary-300' : ''}`}>{t(item.labelKey)}</span>
               
             </button>
           ))}
         </nav>
 
-        {/* Theme Switcher */}
-        <div className="hidden lg:block px-4 py-4 border-t border-slate-200 dark:border-slate-700">
+        {/* Appearance & language */}
+        <div className="hidden lg:block px-4 py-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider">Theme</span>
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider">{t('common.theme')}</span>
             <ThemeSwitcher />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider">{t('common.language')}</span>
+            <LanguageSwitcher />
           </div>
         </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50  dark:bg-slate-900">
-          <p className="text-xs text-center text-slate-600 dark:text-slate-200">© 2026 Forrentech</p>
+          <p className="text-xs text-center text-slate-600 dark:text-slate-200">{t('common.copyright')}</p>
         </div>
       </div>
     </>
